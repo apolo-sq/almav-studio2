@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALMAV Studio — AI Video Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a12;
+    --bg-panel: #111119;
+    --bg-input: #161624;
+    --bg-card: #141422;
+    --bg-hover: #1c1c30;
+    --border: rgba(255,255,255,0.05);
+    --border-active: rgba(99,102,241,0.5);
+    --text: #eeeef4;
+    --text-dim: #9090a8;
+    --text-faint: #5a5a72;
+    --blue: #6366f1;
+    --blue-soft: rgba(99,102,241,0.1);
+    --blue-glow: rgba(99,102,241,0.25);
+    --teal: #14b8a6;
+    --teal-soft: rgba(20,184,166,0.1);
+    --pink: #ec4899;
+    --green: #22c55e;
+    --green-soft: rgba(34,197,94,0.1);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-pill: 100px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.25);
+    --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  body { 
+    background: var(--bg); 
+    color: var(--text); 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    -webkit-font-smoothing: antialiased;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(236,72,153,0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.3); }
+  input, textarea, select, button { font-family: inherit; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)} }
+  @keyframes shimmer { 0%{background-position:-200% 0}100%{background-position:200% 0} }
+  @keyframes breathe { 0%,100%{box-shadow:0 0 20px rgba(99,102,241,0.15)}50%{box-shadow:0 0 35px rgba(99,102,241,0.3)} }
+  @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)} }
+  @keyframes borderGlow { 0%,100%{border-color:rgba(99,102,241,0.2)}50%{border-color:rgba(99,102,241,0.5)} }
+
+  .fade-up { animation: fadeUp .5s cubic-bezier(0.16,1,0.3,1) both; }
+  .fade-in { animation: fadeIn .4s ease both; }
+
+  /* Glass panels */
+  .glass-panel {
+    background: linear-gradient(180deg, rgba(17,17,25,0.95), rgba(17,17,25,0.85));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid var(--border);
+  }
+
+  /* Inputs with glow */
+  .input-glow {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.8;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .input-glow:focus { 
+    border-color: var(--blue); 
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12), 0 4px 16px rgba(99,102,241,0.08);
+    background: rgba(22,22,36,0.9);
+  }
+  .input-glow::placeholder { color: var(--text-faint); }
+
+  /* Buttons */
+  .btn-primary {
+    border: none;
+    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease infinite;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(99,102,241,0.35); }
+  .btn-primary:hover::before { opacity: 1; }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(99,102,241,0.3);
+    color: var(--blue);
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+  }
+  .btn-outline:hover { 
+    border-color: var(--blue); 
+    background: rgba(99,102,241,0.06);
+    box-shadow: 0 4px 16px rgba(99,102,241,0.12);
+  }
+  .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.12); color: var(--text); background: rgba(255,255,255,0.02); }
+
+  /* Option cards */
+  .opt-card {
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .opt-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .opt-card:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-1px); }
+  .opt-card.active { transform: translateY(-1px); }
+
+  /* Scene cards */
+  .scene-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+    cursor: pointer;
+    position: relative;
+  }
+  .scene-card:hover { 
+    border-color: rgba(99,102,241,0.3);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+  }
+  .scene-card.editing {
+    border-color: var(--blue);
+    box-shadow: 0 8px 28px rgba(99,102,241,0.2);
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(8px);
+  }
+
+  /* Section labels */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* Filmstrip */
+  .filmstrip-item {
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .filmstrip-item:hover { border-color: rgba(99,102,241,0.3); }
+  .filmstrip-item.active { 
+    border-color: var(--blue); 
+    box-shadow: 0 4px 16px rgba(99,102,241,0.2);
+  }
+
+  /* Video player frame */
+  .video-frame {
+    background: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.02) inset;
+  }
+
+  /* Noise texture overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Nav bar */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,18,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* Chip template buttons */
+  .chip-btn {
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+  .chip-btn:hover { 
+    border-color: rgba(99,102,241,0.3); 
+    color: var(--text);
+    background: rgba(99,102,241,0.04);
+    transform: translateY(-1px);
+  }
+
+  /* Play button overlay */
+  .play-btn {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.85);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: 0 8px 28px rgba(99,102,241,0.4);
+    animation: breathe 3s ease-in-out infinite;
+  }
+  .play-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 36px rgba(99,102,241,0.5);
+  }
+
+  /* Image reference upload area */
+  .upload-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px dashed rgba(99,102,241,0.2);
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .upload-area:hover { 
+    border-color: rgba(99,102,241,0.4); 
+    background: rgba(99,102,241,0.03);
+    color: var(--text-dim);
+  }
+
+  /* Narration subtitle overlay */
+  .narration-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.92));
+    padding: 32px 24px 20px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+const DEFAULT_CONFIG = { 
+  supabaseUrl: "https://ebuslebkgzqqolleunxk.supabase.co", 
+  supabaseKey: "TU_ANON_KEY_AQUI", 
+  n8nWebhook: "https://n8n.almaquinta.com/webhook/generate-scenes" 
+};
+
+const supaFetch = async(c,path,opts={})=>{
+  const r=await fetch(`${c.supabaseUrl}/rest/v1/${path}`,{...opts,headers:{apikey:c.supabaseKey,Authorization:`Bearer ${c.supabaseKey}`,"Content-Type":"application/json",Prefer:opts.method==="PATCH"?"return=representation":"return=minimal",...opts.headers}});
+  if(!r.ok)throw new Error(await r.text());
+  const t=await r.text();return t?JSON.parse(t):null;
+};
+
+/* ─── Icons ─── */
+const I={
+  spark:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5z"/></svg>,
+  wand:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M12.2 11.8L11 13M12.2 6.2L11 5"/><line x1="2" y1="22" x2="15" y2="9"/></svg>,
+  play:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>,
+  film:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg>,
+  gear:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
+  check:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>,
+  arrow:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>,
+  back:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
+  dl:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
+  vol:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14"/></svg>,
+  img:()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>,
+};
+
+function Spin({s=16}){return <div style={{width:s,height:s,border:"2px solid rgba(255,255,255,0.1)",borderTopColor:"var(--blue)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>}
+
+/* ─── Config Modal ─── */
+function ConfigModal({config,setConfig,onSave}){
+  const[l,setL]=useState(config);const[t,setT]=useState(false);const[st,setSt]=useState("");
+  const test=async()=>{setT(true);setSt("...");try{await supaFetch(l,"scenes?limit=1");setSt("ok")}catch(e){setSt("err:"+e.message.substring(0,50))}setT(false)};
+  const fields=[{k:"supabaseUrl",l:"Supabase URL",p:"https://xxxxx.supabase.co"},{k:"supabaseKey",l:"Supabase Key",p:"eyJhbGci..."},{k:"n8nWebhook",l:"n8n Webhook",p:"https://..."}];
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,backdropFilter:"blur(20px)"}}>
+      <div className="fade-up" style={{background:"linear-gradient(180deg,rgba(17,17,25,0.97),rgba(17,17,25,0.92))",backdropFilter:"blur(32px)",WebkitBackdropFilter:"blur(32px)",border:"1px solid rgba(99,102,241,0.1)",borderRadius:24,padding:36,maxWidth:440,width:"92%",boxShadow:"0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:28}}>
+          <div style={{width:44,height:44,borderRadius:14,background:"linear-gradient(135deg,rgba(99,102,241,0.2),rgba(99,102,241,0.08))",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--blue)",boxShadow:"0 4px 16px rgba(99,102,241,0.15)"}}><I.film/></div>
+          <div><div style={{fontSize:20,fontWeight:800,letterSpacing:-.5,background:"linear-gradient(135deg,#fff,#a5b4fc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>ALMAV Studio</div><div style={{fontSize:11,color:"var(--text-faint)",marginTop:2}}>Configuración de conexión</div></div>
+        </div>
+        {fields.map(f=>(
+          <div key={f.k} style={{marginBottom:12}}>
+            <label style={{fontSize:11,fontWeight:600,color:"var(--text-dim)",letterSpacing:.5,textTransform:"uppercase",display:"block",marginBottom:5}}>{f.l}</label>
+            <input value={l[f.k]||""} onChange={e=>setL({...l,[f.k]:e.target.value})} placeholder={f.p}
+              className="input-glow" style={{fontSize:13,borderRadius:10,padding:"11px 14px"}}/>
+          </div>
+        ))}
+        {st&&<div style={{padding:"8px 12px",borderRadius:8,marginBottom:10,fontSize:12,fontWeight:500,background:st==="ok"?"var(--green-soft)":st.startsWith("err")?"rgba(239,68,68,.1)":"rgba(255,255,255,.03)",color:st==="ok"?"var(--green)":st.startsWith("err")?"#ef4444":"var(--text-dim)"}}>{st==="ok"?"✓ Conectado":"✗ "+st.slice(4)}</div>}
+        <div style={{display:"flex",gap:8,marginTop:16}}>
+          <button onClick={test} disabled={t} className="btn-ghost" style={{flex:1,padding:"11px",fontSize:12,fontWeight:600}}>{t?"⏳":"🔌"} Test</button>
+          <button onClick={()=>{setConfig(l);onSave(l)}} className="btn-primary" style={{flex:2,padding:"11px",fontSize:13}}>Guardar y Continuar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Stepper ─── */
+function Stepper({current}){
+  const steps=["Prompt","Storyboard","Video","Export"];
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:2}}>
+      {steps.map((s,i)=>{const n=i+1;const a=n===current;const d=n<current;return(
+        <React.Fragment key={n}>
+          <div style={{display:"flex",alignItems:"center",gap:5}}>
+            <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,
+              background:a?"var(--blue)":d?"var(--green-soft)":"var(--bg-input)",color:a?"#fff":d?"var(--green)":"var(--text-faint)",
+              border:a?"none":`1px solid ${d?"rgba(34,197,94,.3)":"var(--border)"}`,transition:"all .3s"}}>{d?<I.check/>:n}</div>
+            <span style={{fontSize:11,fontWeight:600,color:a?"var(--text)":"var(--text-faint)",display:a?"block":"none"}}>{s}</span>
+          </div>
+          {n<4&&<div style={{width:16,height:1,background:d?"rgba(34,197,94,.3)":"var(--border)"}}/>}
+        </React.Fragment>
+      )})}
+    </div>
+  );
+}
+
+/* ─── Screen 1: Prompt ─── */
+function Screen1({onGenerate,loading,statusMsg}){
+  const[script,setScript]=useState("");
+  const[scenes,setScenes]=useState(null);
+  const[aspect,setAspect]=useState(null);
+  const[style,setStyle]=useState(null);
+  const[voice,setVoice]=useState(null);
+  const[anim,setAnim]=useState(null);
+  const[trans,setTrans]=useState(null);
+  const[refImg,setRefImg]=useState(null);
+  const[refPreview,setRefPreview]=useState(null);
+  const toggle=(cur,val,set)=>set(cur===val?null:val);
+
+  const handleImageUpload=(e)=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    setRefImg(file);
+    const reader=new FileReader();
+    reader.onload=(ev)=>setRefPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+  const removeImage=()=>{setRefImg(null);setRefPreview(null)};
+
+  const styleList=[
+    {id:"CINEMATOGRAFICO",label:"Cinematic",color:"#f97316",bg:"linear-gradient(135deg,#431407,#7c2d12)"},
+    {id:"3D",label:"3D Render",color:"#06b6d4",bg:"linear-gradient(135deg,#083344,#155e75)"},
+    {id:"REALISMO",label:"Photo Real",color:"#22c55e",bg:"linear-gradient(135deg,#052e16,#166534)"},
+    {id:"ANIME",label:"Anime",color:"#ec4899",bg:"linear-gradient(135deg,#500724,#9d174d)"},
+    {id:"ACUARELA",label:"Watercolor",color:"#a78bfa",bg:"linear-gradient(135deg,#2e1065,#5b21b6)"},
+    {id:"RETRO",label:"Retro 80s",color:"#fbbf24",bg:"linear-gradient(135deg,#451a03,#92400e)"},
+  ];
+
+  const animList=[
+    {id:"zoomIn",label:"Zoom In",icon:"🔍"},
+    {id:"zoomOut",label:"Zoom Out",icon:"🔎"},
+    {id:"slideLeft",label:"Slide Left",icon:"◀"},
+    {id:"slideRight",label:"Slide Right",icon:"▶"},
+    {id:"slideUp",label:"Slide Up",icon:"▲"},
+    {id:"slideDown",label:"Slide Down",icon:"▼"},
+  ];
+
+  const transList=[
+    {id:"fade",label:"Fade",icon:"🌫"},
+    {id:"dissolve",label:"Dissolve",icon:"✨"},
+    {id:"wipeLeft",label:"Wipe Left",icon:"⬅"},
+    {id:"wipeRight",label:"Wipe Right",icon:"➡"},
+    {id:"slideLeft",label:"Slide L",icon:"📱"},
+    {id:"slideRight",label:"Slide R",icon:"📲"},
+  ];
+
+  const voiceList=[
+    {id:"21m00Tcm4TlvDq8ikWAM",label:"Rachel",tag:"F · Calm"},
+    {id:"ErXwobaYiN019PkySvjV",label:"Antoni",tag:"M · Warm"},
+    {id:"EXAVITQu4vr4xnSDxMaL",label:"Bella",tag:"F · Soft"},
+    {id:"29vD33N1CtxCmqQRPOHJ",label:"Drew",tag:"M · Deep"},
+  ];
+
+  const buildPrompt=(mode)=>{
+    const n=scenes||1;
+    let p=`Crea ${n} escenas para: ${script}.`;
+    if(aspect)p+=` Aspecto: ${aspect}.`;
+    if(style)p+=` Estilo visual: ${style}.`;
+    if(anim)p+=` Animación: ${anim}.`;
+    if(trans)p+=` Transición: ${trans}.`;
+    if(refImg)p+=` Usa la imagen de referencia como guía visual.`;
+    return{chatInput:p,numScenes:n,voiceId:voice,mode,animation:anim,transition:trans};
+  };
+
+  return(
+    <div className="fade-up" style={{display:"flex",minHeight:"calc(100vh - 52px)"}}>
+      {/* LEFT: Prompt area */}
+      <div style={{flex:1,padding:"32px 36px",display:"flex",flexDirection:"column"}}>
+        <div style={{marginBottom:24}}>
+          <h1 style={{fontSize:28,fontWeight:800,letterSpacing:-.5,marginBottom:8,background:"linear-gradient(135deg,#fff 0%,#a5b4fc 60%,#c084fc 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Crea tu video con IA</h1>
+          <p style={{fontSize:13,color:"var(--text-dim)",lineHeight:1.6}}>Describe tu escena, adjunta referencia visual o usa las opciones del panel</p>
+        </div>
+
+        {/* Quick templates */}
+        <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+          {["🍕 Pizzería artesanal","🏠 Casa moderna","🚀 Startup tech","⚔️ Épica medieval"].map(t=>(
+            <button key={t} onClick={()=>setScript(t.slice(2)+" — crea un video cinematográfico con ambiente envolvente")}
+              className="chip-btn">{t}</button>
+          ))}
+        </div>
+
+        {/* Image reference upload */}
+        <div style={{marginBottom:16}}>
+          {refPreview ? (
+            <div style={{display:"flex",alignItems:"center",gap:12,padding:12,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)"}}>
+              <img src={refPreview} style={{width:64,height:48,objectFit:"cover",borderRadius:6}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>Imagen de referencia</div>
+                <div style={{fontSize:10,color:"var(--text-faint)",marginTop:2}}>{refImg?.name}</div>
+              </div>
+              <button onClick={removeImage} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(239,68,68,.3)",background:"rgba(239,68,68,.08)",color:"#ef4444",fontSize:10,fontWeight:600,cursor:"pointer"}}>✕ Quitar</button>
+            </div>
+          ) : (
+            <label className="upload-area">
+              <I.img/> Adjuntar imagen de referencia (opcional)
+              <input type="file" accept="image/*" onChange={handleImageUpload} style={{display:"none"}}/>
+            </label>
+          )}
+        </div>
+
+        {/* Textarea */}
+        <div style={{flex:1,position:"relative",marginBottom:16}}>
+          <textarea value={script} onChange={e=>setScript(e.target.value)}
+            placeholder="Describe tu video con todo el detalle que quieras: personajes, ambiente, iluminación, estilo, emoción..."
+            className="input-glow"
+            style={{width:"100%",height:"100%",minHeight:180,borderRadius:14,padding:20,resize:"none"}}/>
+          <div style={{position:"absolute",bottom:12,right:16,fontSize:11,color:"var(--text-faint)"}}>{script.length}</div>
+        </div>
+
+        {/* Summary bar */}
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:14,flexWrap:"wrap"}}>
+          {scenes&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>{scenes} escenas</span>}
+          {style&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>{style}</span>}
+          {aspect&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>{aspect}</span>}
+          {anim&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--teal-soft)",color:"var(--teal)",fontSize:10,fontWeight:600}}>🎬 {anim}</span>}
+          {trans&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--teal-soft)",color:"var(--teal)",fontSize:10,fontWeight:600}}>🔀 {trans}</span>}
+          {voice&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>🎙 Voz</span>}
+          {refImg&&<span style={{padding:"3px 8px",borderRadius:6,background:"rgba(236,72,153,.1)",color:"var(--pink)",fontSize:10,fontWeight:600}}>📷 Ref</span>}
+          {!scenes&&!style&&!aspect&&!voice&&!anim&&!trans&&!refImg&&<span style={{fontSize:11,color:"var(--text-faint)"}}>⚡ Modo libre — todo se describe en el prompt</span>}
+        </div>
+
+        {/* Dual buttons */}
+        <div style={{display:"flex",gap:10}}>
+          <button onClick={()=>{const p=buildPrompt("scene");onGenerate(p.chatInput,p.numScenes,aspect,style,voice,"scene",p.animation,p.transition)}}
+            disabled={loading||!script.trim()}
+            className="btn-outline"
+            style={{flex:1,padding:"14px",borderRadius:12,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            {loading?<Spin s={14}/>:<I.img/>} Generar Escena
+          </button>
+          <button onClick={()=>{const p=buildPrompt("video");onGenerate(p.chatInput,p.numScenes,aspect,style,voice,"video",p.animation,p.transition)}}
+            disabled={loading||!script.trim()}
+            className="btn-primary"
+            style={{flex:1,padding:"14px",borderRadius:12,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            {loading?<Spin s={14}/>:<I.wand/>} Generar Video
+          </button>
+        </div>
+        {statusMsg&&<div style={{textAlign:"center",marginTop:12,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Spin s={12}/><span style={{fontSize:12,color:"var(--blue)"}}>{statusMsg}</span></div>}
+      </div>
+
+      {/* RIGHT: Options panel */}
+      <div style={{width:320,borderLeft:"1px solid var(--border)",background:"linear-gradient(180deg,rgba(17,17,25,0.95),rgba(17,17,25,0.88))",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",padding:"20px 18px",overflowY:"auto",flexShrink:0}}>
+        {/* Scenes */}
+        <div style={{marginBottom:20}}>
+          <div className="section-label">Escenas</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5}}>
+            {[1,2,4,8].map(n=>(
+              <button key={n} onClick={()=>toggle(scenes,n,setScenes)}
+                style={{padding:"9px 0",borderRadius:8,border:scenes===n?"1.5px solid var(--blue)":"1px solid var(--border)",
+                  background:scenes===n?"var(--blue-soft)":"transparent",color:scenes===n?"var(--blue)":"var(--text-dim)",
+                  fontSize:15,fontWeight:700,cursor:"pointer",transition:'all .2s'}}>{n}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Style */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>Estilo Visual</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+            {styleList.map(s=>(
+              <button key={s.id} onClick={()=>toggle(style,s.id,setStyle)}
+                style={{padding:"12px 10px",borderRadius:8,border:style===s.id?`1.5px solid ${s.color}`:"1px solid var(--border)",
+                  background:style===s.id?s.bg:"var(--bg-input)",cursor:"pointer",transition:'all .2s',textAlign:"left"}}>
+                <div style={{fontSize:12,fontWeight:700,color:style===s.id?s.color:"var(--text-dim)"}}>{s.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Aspect */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>Ratio</div>
+          <div style={{display:"flex",gap:5}}>
+            {["16:9","9:16","1:1"].map(a=>(
+              <button key={a} onClick={()=>toggle(aspect,a,setAspect)}
+                style={{flex:1,padding:"9px",borderRadius:8,border:aspect===a?"1.5px solid var(--blue)":"1px solid var(--border)",
+                  background:aspect===a?"var(--blue-soft)":"transparent",color:aspect===a?"var(--blue)":"var(--text-dim)",
+                  fontSize:11,fontWeight:700,cursor:"pointer",transition:'all .2s'}}>{a}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Animation */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🎬 Animación</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>
+            {animList.map(a=>(
+              <button key={a.id} onClick={()=>toggle(anim,a.id,setAnim)}
+                style={{padding:"8px 4px",borderRadius:8,border:anim===a.id?"1.5px solid var(--teal)":"1px solid var(--border)",
+                  background:anim===a.id?"var(--teal-soft)":"transparent",cursor:"pointer",transition:'all .2s',textAlign:"center"}}>
+                <div style={{fontSize:14,marginBottom:2}}>{a.icon}</div>
+                <div style={{fontSize:9,fontWeight:600,color:anim===a.id?"var(--teal)":"var(--text-faint)"}}>{a.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Transitions */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🔀 Transición</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>
+            {transList.map(t=>(
+              <button key={t.id} onClick={()=>toggle(trans,t.id,setTrans)}
+                style={{padding:"8px 4px",borderRadius:8,border:trans===t.id?"1.5px solid var(--teal)":"1px solid var(--border)",
+                  background:trans===t.id?"var(--teal-soft)":"transparent",cursor:"pointer",transition:'all .2s',textAlign:"center"}}>
+                <div style={{fontSize:14,marginBottom:2}}>{t.icon}</div>
+                <div style={{fontSize:9,fontWeight:600,color:trans===t.id?"var(--teal)":"var(--text-faint)"}}>{t.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Voice */}
+        <div>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🎙 Voz</div>
+          <div style={{display:"flex",flexDirection:"column",gap:5}}>
+            {voiceList.map(v=>(
+              <button key={v.id} onClick={()=>toggle(voice,v.id,setVoice)}
+                style={{padding:"9px 10px",borderRadius:8,border:voice===v.id?"1.5px solid var(--blue)":"1px solid var(--border)",
+                  background:voice===v.id?"var(--blue-soft)":"transparent",cursor:"pointer",transition:'all .2s',
+                  display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:12,fontWeight:600,color:voice===v.id?"var(--blue)":"var(--text-dim)"}}>{v.label}</span>
+                <span style={{fontSize:9,color:"var(--text-faint)"}}>{v.tag}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 2: Storyboard ─── */
+function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
+  const[sel,setSel]=useState(new Set());
+  const[regenPrompt,setRegenPrompt]=useState("");
+  const[regenLoading,setRegenLoading]=useState(false);
+  const[regenStatus,setRegenStatus]=useState("");
+  const[editScene,setEditScene]=useState(null);
+  const[originalPrompts]=useState(()=>{
+    const map={};
+    scenes.forEach(s=>{map[s.id]=s.prompt_image});
+    return map;
+  });
+  const toggleSel=id=>{const s=new Set(sel);s.has(id)?s.delete(id):s.add(id);setSel(s)};
+
+  const regenerateImage = async (sceneId) => {
+    if(!regenPrompt.trim()) return;
+    setRegenLoading(true);
+    setRegenStatus("Actualizando prompt...");
+    
+    const scene = scenes.find(s => s.id === sceneId);
+    if(!scene) { setRegenLoading(false); return; }
+
+    // Usar siempre el prompt ORIGINAL + corrección nueva (no acumular)
+    const basePrompt = originalPrompts[sceneId] || scene.prompt_image.split('. CRITICAL MODIFICATION:')[0];
+    const newPrompt = `${basePrompt}. CRITICAL MODIFICATION: ${regenPrompt}. Keep everything else exactly the same.`;
+    const oldImage = scene.image_url;
+    
+    try {
+      // 1. Actualizar prompt_image y cambiar status a "pending"
+      await supaFetch(config, `scenes?id=eq.${sceneId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ 
+          prompt_image: newPrompt, 
+          status: "pending",
+          image_url: null
+        })
+      });
+
+      // 2. Llamar webhook para que n8n ejecute Fase 2
+      setRegenStatus("Enviando a n8n...");
+      try {
+        await fetch(config.n8nWebhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chatInput: "regenerate", mode: "regenerate" })
+        });
+      } catch(e) {}
+
+      // 3. Poll hasta que n8n genere la nueva imagen
+      setRegenStatus("Regenerando imagen...");
+      let attempts = 0;
+      while(attempts < 40) {
+        await new Promise(r => setTimeout(r, 3000));
+        try {
+          const data = await supaFetch(config, `scenes?id=eq.${sceneId}`);
+          if(data && data[0]) {
+            if(data[0].status === "image_ready" && data[0].image_url) {
+              setRegenStatus("¡Imagen regenerada!");
+              await refreshScenes();
+              setTimeout(() => setRegenStatus(""), 3000);
+              setRegenLoading(false);
+              setRegenPrompt("");
+              return;
+            }
+          }
+        } catch(e) {}
+        attempts++;
+        setRegenStatus(`Regenerando... ${Math.min(Math.round(attempts/40*100),95)}%`);
+      }
+      
+      // Timeout - restaurar
+      setRegenStatus("Timeout. Restaurando...");
+      await supaFetch(config, `scenes?id=eq.${sceneId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ image_url: oldImage, status: "image_ready" })
+      });
+      await refreshScenes();
+      setRegenStatus("No se pudo regenerar. Intenta de nuevo.");
+    } catch(e) {
+      setRegenStatus("Error: " + e.message);
+    }
+    setRegenLoading(false);
+    setRegenPrompt("");
+    setTimeout(() => setRegenStatus(""), 4000);
+  };
+
+  return(
+    <div className="fade-up" style={{display:"flex",minHeight:"calc(100vh - 52px)"}}>
+      {/* Sidebar */}
+      <div style={{width:260,borderRight:"1px solid var(--border)",padding:20,background:"var(--bg-panel)",flexShrink:0,display:"flex",flexDirection:"column",overflowY:"auto"}}>
+        <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:12}}>Escenas</div>
+        {scenes.map(s=>(
+          <div key={s.id} onClick={()=>{toggleSel(s.id);setEditScene(editScene===s.id?null:s.id)}} style={{padding:"10px",borderRadius:8,marginBottom:4,background:editScene===s.id?"var(--blue-soft)":sel.has(s.id)?"rgba(99,102,241,0.06)":"transparent",border:`1px solid ${editScene===s.id?"var(--border-active)":sel.has(s.id)?"rgba(99,102,241,0.15)":"transparent"}`,cursor:"pointer",transition:'all .2s'}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:12,fontWeight:600,color:editScene===s.id?"var(--blue)":"var(--text-dim)"}}>Scene {s.scene_number}</span>
+              <span style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:s.status==="image_ready"?"var(--green-soft)":"rgba(255,255,255,.03)",color:s.status==="image_ready"?"var(--green)":"var(--text-faint)",fontWeight:600}}>{s.status==="image_ready"?"Ready":s.status}</span>
+            </div>
+            <p style={{fontSize:10,color:"var(--text-faint)",marginTop:4,lineHeight:1.4}}>{(s.narration_text||"").substring(0,60)}...</p>
+          </div>
+        ))}
+
+        {/* Regenerate panel */}
+        {editScene && (
+          <div style={{marginTop:12,padding:12,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)"}}>
+            <div style={{fontSize:10,fontWeight:700,color:"var(--blue)",letterSpacing:.5,textTransform:"uppercase",marginBottom:8}}>✏️ Corregir Escena {scenes.find(s=>s.id===editScene)?.scene_number}</div>
+            
+            {/* Current image preview */}
+            {scenes.find(s=>s.id===editScene)?.image_url && (
+              <div style={{borderRadius:6,overflow:"hidden",marginBottom:8,aspectRatio:"16/9"}}>
+                <img src={scenes.find(s=>s.id===editScene).image_url} style={{width:"100%",height:"100%",objectFit:"cover",opacity:.7}}/>
+              </div>
+            )}
+
+            <textarea value={regenPrompt} onChange={e=>setRegenPrompt(e.target.value)}
+              placeholder="Describe qué quieres cambiar... ej: 'Que sea de noche', 'Agrega lluvia', 'Cambia los colores a tonos fríos'"
+              style={{width:"100%",height:70,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:10,color:"var(--text)",fontSize:11,resize:"none",outline:"none",lineHeight:1.5}}
+              onFocus={e=>e.target.style.borderColor="var(--blue)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.06)"}/>
+            
+            <button onClick={()=>regenerateImage(editScene)} disabled={regenLoading||!regenPrompt.trim()}
+              style={{width:"100%",marginTop:8,padding:"9px",borderRadius:8,border:"none",
+                background:regenLoading?"var(--bg-hover)":"var(--blue)",color:regenLoading?"var(--text-dim)":"#fff",
+                fontSize:11,fontWeight:700,cursor:regenLoading?"wait":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+              {regenLoading?<><Spin s={12}/> Generando...</>:"🎨 Regenerar Imagen"}
+            </button>
+            
+            {regenStatus&&<div style={{marginTop:6,fontSize:10,color:regenStatus.includes("Error")?"#ef4444":regenStatus.includes("!")?"var(--green)":"var(--blue)",textAlign:"center"}}>{regenStatus}</div>}
+          </div>
+        )}
+
+        <div style={{marginTop:"auto",paddingTop:12,display:"flex",flexDirection:"column",gap:6}}>
+          <button onClick={onBack} style={{padding:"9px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--text-dim)",fontSize:11,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><I.back/> Volver</button>
+        </div>
+      </div>
+
+      {/* Main area */}
+      <div style={{flex:1,padding:28}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div>
+            <h2 style={{fontSize:20,fontWeight:800,letterSpacing:-.3}}>Storyboard</h2>
+            <p style={{fontSize:12,color:"var(--text-dim)",marginTop:2}}>{scenes.length} escenas · Click en una escena para editar</p>
+          </div>
+          <button onClick={onNext} style={{padding:"10px 20px",borderRadius:10,border:"none",background:"var(--blue)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>Generar Video <I.arrow/></button>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(scenes.length,4)},1fr)`,gap:14}}>
+          {scenes.map(sc=>(
+            <div key={sc.id} className="fade-up">
+              <div onClick={()=>{toggleSel(sc.id);setEditScene(editScene===sc.id?null:sc.id)}} style={{position:"relative",borderRadius:10,overflow:"hidden",aspectRatio:"16/9",border:editScene===sc.id?"2px solid var(--blue)":sel.has(sc.id)?"1.5px solid rgba(99,102,241,0.4)":"1px solid var(--border)",cursor:"pointer",transition:"all .3s",boxShadow:editScene===sc.id?"0 4px 16px var(--blue-glow)":"none"}}>
+                {sc.image_url?<img src={sc.image_url} style={{width:"100%",height:"100%",objectFit:"cover"}}/>:
+                <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg-input)",color:"var(--text-faint)"}}><I.img/></div>}
+                {editScene===sc.id&&<div style={{position:"absolute",top:6,right:6,padding:"3px 8px",borderRadius:4,background:"var(--blue)",fontSize:9,fontWeight:700,color:"#fff"}}>Editando</div>}
+                {sel.has(sc.id)&&editScene!==sc.id&&<div style={{position:"absolute",top:6,right:6,width:20,height:20,borderRadius:"50%",background:"var(--blue)",display:"flex",alignItems:"center",justifyContent:"center"}}><I.check/></div>}
+              </div>
+              <div style={{marginTop:6}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <span style={{fontSize:11,fontWeight:700,color:editScene===sc.id?"var(--blue)":"var(--text-dim)"}}>E{sc.scene_number}</span>
+                  <button onClick={(e)=>{e.stopPropagation();setEditScene(sc.id);setRegenPrompt("")}} 
+                    style={{fontSize:9,padding:"2px 6px",borderRadius:4,border:"1px solid var(--border)",background:"transparent",color:"var(--text-faint)",cursor:"pointer"}}
+                    onMouseOver={e=>{e.target.style.borderColor="var(--blue)";e.target.style.color="var(--blue)"}}
+                    onMouseOut={e=>{e.target.style.borderColor="rgba(255,255,255,0.06)";e.target.style.color="var(--text-faint)"}}>✏️ Editar</button>
+                </div>
+                <p style={{fontSize:10,color:"var(--text-faint)",lineHeight:1.4,marginTop:2}}>{(sc.narration_text||"").substring(0,70)}...</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 3: Video ─── */
+function Screen3({scenes,config,onNext,onBack,onVideoReady}){
+  const[cur,setCur]=useState(0);const[gen,setGen]=useState(false);const[url,setUrl]=useState(null);const[prog,setProg]=useState("");
+  const genVideo=async()=>{
+    setGen(true);setProg("Buscando video...");
+    try{
+      const ex=scenes.find(s=>s.video_url);if(ex){setUrl(ex.video_url);onVideoReady(ex.video_url);setGen(false);setProg("");return}
+      const ck=await supaFetch(config,"scenes?video_url=not.is.null&limit=1");
+      if(ck&&ck.length>0&&ck[0].video_url){setUrl(ck[0].video_url);onVideoReady(ck[0].video_url);setGen(false);setProg("");return}
+      setProg("Esperando render...");let a=0;
+      while(a<60){await new Promise(r=>setTimeout(r,4000));try{
+        const d=await supaFetch(config,"scenes?select=video_url,status&order=scene_number.asc");
+        if(d&&d.length>0){const v=d.find(s=>s.video_url);if(v){setUrl(v.video_url);onVideoReady(v.video_url);setProg("");setGen(false);return}}
+      }catch(e){}a++;setProg(`Procesando... ${Math.min(Math.round(a/50*100),95)}%`)}
+      setProg("Timeout — revisa n8n");
+    }catch(e){setProg("Error: "+e.message)}setGen(false)};
+
+  return(
+    <div className="fade-up" style={{display:"flex",minHeight:"calc(100vh - 52px)"}}>
+      <div style={{width:220,borderRight:"1px solid var(--border)",padding:20,background:"var(--bg-panel)",flexShrink:0,display:"flex",flexDirection:"column"}}>
+        <button onClick={onBack} style={{padding:"9px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--text-dim)",fontSize:11,fontWeight:600,cursor:"pointer",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><I.back/> Volver</button>
+        <div style={{fontSize:11,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>Timeline</div>
+        {scenes.map((s,i)=>(
+          <div key={s.id} onClick={()=>setCur(i)} style={{padding:"8px 10px",borderRadius:8,marginBottom:3,background:cur===i?"var(--blue-soft)":"transparent",border:`1px solid ${cur===i?"var(--border-active)":"transparent"}`,color:cur===i?"var(--blue)":"var(--text-faint)",fontSize:11,fontWeight:500,cursor:"pointer",transition:'all .2s'}}>
+            Scene {s.scene_number}
+          </div>
+        ))}
+        <div style={{marginTop:"auto"}}>
+          <button onClick={genVideo} disabled={gen} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:url?"var(--green)":"var(--blue)",color:"#fff",fontSize:12,fontWeight:700,cursor:gen?"wait":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {gen?<><Spin s={14}/> Procesando...</>:url?"✓ Video Listo":<><I.film/> Crear Video</>}
+          </button>
+          {prog&&<div style={{fontSize:10,color:"var(--blue)",marginTop:6,textAlign:"center"}}>{prog}</div>}
+          {url&&<button onClick={onNext} style={{width:"100%",marginTop:6,padding:"10px",borderRadius:10,border:"none",background:"var(--blue)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>Exportar →</button>}
+        </div>
+      </div>
+      <div style={{flex:1,padding:28}}>
+        <div style={{display:"flex",gap:6,marginBottom:12,overflowX:"auto"}}>
+          {scenes.map((s,i)=>(
+            <div key={s.id} onClick={()=>setCur(i)} style={{width:90,aspectRatio:"16/9",borderRadius:8,overflow:"hidden",flexShrink:0,border:cur===i?"2px solid var(--blue)":"1px solid var(--border)",cursor:"pointer",opacity:cur===i?1:.5,transition:"all .3s"}}>
+              <img src={s.image_url} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+            </div>
+          ))}
+        </div>
+        <div style={{background:"var(--bg-card)",borderRadius:14,overflow:"hidden",border:"1px solid var(--border)",position:"relative",aspectRatio:"16/9",maxHeight:460}}>
+          {url?<video src={url} controls style={{width:"100%",height:"100%",objectFit:"contain"}}/>:(
+            <>{scenes[cur]?.image_url&&<img src={scenes[cur].image_url} style={{width:"100%",height:"100%",objectFit:"cover",transition:"all .4s"}}/>}
+              {scenes[cur]?.narration_text&&<div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(transparent,rgba(0,0,0,.9))",padding:"28px 20px 16px"}}><p style={{color:"#fff",fontSize:13,textAlign:"center",lineHeight:1.6}}>{scenes[cur].narration_text}</p></div>}
+              <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div onClick={genVideo} style={{width:56,height:56,borderRadius:"50%",background:"rgba(99,102,241,.8)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",backdropFilter:"blur(8px)",boxShadow:"0 8px 24px var(--blue-glow)"}}><I.play/></div></div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 4: Export ─── */
+function Screen4({scenes,videoUrl,onBack}){
+  const[sp,setSp]=useState(false);
+  const speak=()=>{if(!window.speechSynthesis)return;setSp(true);const t=scenes.map(s=>s.narration_text).filter(Boolean).join(". ");const u=new SpeechSynthesisUtterance(t);u.lang="es-ES";u.rate=.9;u.onend=()=>setSp(false);window.speechSynthesis.speak(u)};
+  const dlSRT=()=>{let s="";scenes.forEach((sc,i)=>{const st=i*5;const en=st+5;const f=sec=>`${String(Math.floor(sec/3600)).padStart(2,"0")}:${String(Math.floor(sec%3600/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")},000`;s+=`${i+1}\n${f(st)} --> ${f(en)}\n${sc.narration_text||""}\n\n`});const b=new Blob([s],{type:"text/srt"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="subtitulos.srt";a.click()};
+  return(
+    <div className="fade-up" style={{display:"flex",minHeight:"calc(100vh - 52px)"}}>
+      <div style={{width:220,borderRight:"1px solid var(--border)",padding:20,background:"var(--bg-panel)",flexShrink:0,display:"flex",flexDirection:"column"}}>
+        <button onClick={onBack} style={{padding:"9px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--text-dim)",fontSize:11,fontWeight:600,cursor:"pointer",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><I.back/> Volver</button>
+        <div style={{fontSize:11,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>Descargas</div>
+        <button onClick={dlSRT} style={{width:"100%",padding:"9px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--text-dim)",fontSize:11,cursor:"pointer",marginBottom:6,textAlign:"left"}}>📝 Subtítulos SRT</button>
+        <button onClick={speak} disabled={sp} style={{width:"100%",padding:"9px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--text-dim)",fontSize:11,cursor:"pointer",marginBottom:6,textAlign:"left"}}>🔊 {sp?"Reproduciendo...":"Escuchar narración"}</button>
+        <div style={{marginTop:"auto"}}><button onClick={()=>videoUrl&&window.open(videoUrl,"_blank")} disabled={!videoUrl} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:videoUrl?"var(--blue)":"var(--bg-input)",color:videoUrl?"#fff":"var(--text-faint)",fontSize:13,fontWeight:700,cursor:videoUrl?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><I.dl/> Exportar MP4</button></div>
+      </div>
+      <div style={{flex:1,padding:28}}>
+        <h2 style={{fontSize:20,fontWeight:800,marginBottom:4}}>Video Final</h2>
+        <p style={{fontSize:12,color:"var(--text-dim)",marginBottom:16}}>{scenes.length} escenas · {scenes.length*5}s</p>
+        <div style={{background:"var(--bg-card)",borderRadius:14,overflow:"hidden",border:"1px solid var(--border)",maxWidth:780,boxShadow:'0 8px 32px rgba(0,0,0,0.25)'}}>
+          {videoUrl?<video src={videoUrl} controls style={{width:"100%",display:"block"}}/>:
+          <div style={{aspectRatio:"16/9",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--text-faint)",fontSize:12}}>Genera el video en la pantalla anterior</div>}
+        </div>
+        <div style={{marginTop:20}}>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>Narración</div>
+          <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(scenes.length,4)},1fr)`,gap:8}}>
+            {scenes.map(s=>(
+              <div key={s.id} style={{padding:12,borderRadius:10,background:"var(--bg-card)",border:"1px solid var(--border)",fontSize:11,color:"var(--text-dim)",lineHeight:1.6}}>
+                <span style={{color:"var(--blue)",fontWeight:700,fontSize:10,display:"block",marginBottom:4}}>Scene {s.scene_number}</span>{s.narration_text||"—"}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── App ─── */
+function App(){
+  const[screen,setScreen]=useState(1);const[scenes,setScenes]=useState([]);const[videoUrl,setVideoUrl]=useState(null);
+  const[showCfg,setShowCfg]=useState(false);const[loading,setLoading]=useState(false);
+  const[config,setConfig]=useState(DEFAULT_CONFIG);const cfgRef=useRef(config);const[statusMsg,setStatusMsg]=useState("");
+  useEffect(()=>{cfgRef.current=config},[config]);
+
+  const fetchScenes=async()=>{const c=cfgRef.current;try{const d=await supaFetch(c,"scenes?order=scene_number.asc");if(d)setScenes(d);const v=d?.find(s=>s.video_url);if(v)setVideoUrl(v.video_url)}catch(e){}};
+
+  const handleGenerate=async(chatInput,numScenes,aspect,style,voiceId,mode,animation,transition)=>{
+    const c=cfgRef.current;if(!c.supabaseUrl||!c.n8nWebhook){alert("Falta configuración.");return}
+    setLoading(true);setStatusMsg("Limpiando...");
+    try{
+      try{await supaFetch(c,"scenes?scene_number=gt.0",{method:"DELETE"})}catch(e){}
+      await new Promise(r=>setTimeout(r,1000));setStatusMsg("Enviando a la IA...");
+      try{await fetch(c.n8nWebhook,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chatInput,voiceId:voiceId||"",mode:mode||"video",animation:animation||"zoomIn",transition:transition||"fade"})})}catch(e){}
+      await new Promise(r=>setTimeout(r,5000));setStatusMsg("Generando escenas...");
+      let att=0,found=[];
+      while(att<60){await new Promise(r=>setTimeout(r,3000));try{
+        const d=await supaFetch(c,"scenes?order=scene_number.asc");
+        if(d&&d.length>0){found=d;const wi=d.filter(s=>s.status==="image_ready");
+          setStatusMsg(`Escenas: ${d.length}/${numScenes} · Imágenes: ${wi.length}/${numScenes}`);
+          if(wi.length>=numScenes||(att>20&&d.length>=numScenes)){setScenes(d);setStatusMsg("");setScreen(2);setLoading(false);return}}
+      }catch(e){}att++}
+      if(found.length>0){setScenes(found);setScreen(2)}else alert("No se generaron escenas. Revisa n8n.");
+    }catch(e){alert("Error: "+e.message)}setLoading(false);setStatusMsg("")};
+
+  const onCfgSave=async c=>{setShowCfg(false);try{const d=await supaFetch(c,"scenes?order=scene_number.asc");if(d?.length>0){setScenes(d);const v=d.find(s=>s.video_url);if(v)setVideoUrl(v.video_url);setScreen(2)}}catch(e){}};
+
+  return(
+    <div style={{background:"var(--bg)",minHeight:"100vh"}}>
+      {showCfg&&<ConfigModal config={config} setConfig={setConfig} onSave={onCfgSave}/>}
+      <nav className="nav-bar">
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:30,height:30,borderRadius:9,background:"linear-gradient(135deg,rgba(99,102,241,0.2),rgba(99,102,241,0.08))",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--blue)",boxShadow:"0 2px 8px rgba(99,102,241,0.12)"}}><I.film/></div>
+          <span style={{fontSize:16,fontWeight:800,letterSpacing:-.4,background:"linear-gradient(135deg,#fff,#a5b4fc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>ALMAV</span>
+          <span style={{fontSize:11,color:"var(--text-faint)",fontWeight:400}}>Studio</span>
+        </div>
+        <div style={{flex:1,display:"flex",justifyContent:"center"}}><Stepper current={screen}/></div>
+        <button onClick={()=>setShowCfg(true)} className="btn-ghost" style={{padding:"6px 12px",borderRadius:8,fontSize:11,display:"flex",alignItems:"center",gap:5}}><I.gear/> Config</button>
+      </nav>
+      {screen===1&&<Screen1 onGenerate={handleGenerate} loading={loading} statusMsg={statusMsg}/>}
+      {screen===2&&<Screen2 scenes={scenes} config={config} onNext={()=>setScreen(3)} onBack={()=>setScreen(1)} refreshScenes={fetchScenes} setScenes={setScenes}/>}
+      {screen===3&&<Screen3 scenes={scenes} config={config} onNext={()=>setScreen(4)} onBack={()=>setScreen(2)} onVideoReady={u=>setVideoUrl(u)}/>}
+      {screen===4&&<Screen4 scenes={scenes} videoUrl={videoUrl} onBack={()=>setScreen(3)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
