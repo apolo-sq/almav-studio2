@@ -10,23 +10,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a12;
-    --bg-panel: #111119;
-    --bg-input: #161624;
-    --bg-card: #141422;
+    --bg: #08080e;
+    --bg-panel: #0c0c16;
+    --bg-input: #12121e;
+    --bg-card: #0e0e1a;
     --bg-hover: #1c1c30;
     --border: rgba(255,255,255,0.05);
-    --border-active: rgba(99,102,241,0.5);
-    --text: #eeeef4;
-    --text-dim: #9090a8;
-    --text-faint: #5a5a72;
-    --blue: #6366f1;
-    --blue-soft: rgba(99,102,241,0.1);
-    --blue-glow: rgba(99,102,241,0.25);
-    --teal: #14b8a6;
+    --border-active: rgba(6,182,212,0.5);
+    --text: #e0f2fe;
+    --text-dim: #7dd3fc;
+    --text-faint: #3b82a0;
+    --blue: #06b6d4;
+    --blue-soft: rgba(6,182,212,0.1);
+    --blue-glow: rgba(6,182,212,0.25);
+    --teal: #f43f5e;
     --teal-soft: rgba(20,184,166,0.1);
-    --pink: #ec4899;
-    --green: #22c55e;
+    --pink: #f43f5e;
+    --green: #22d3ee;
     --green-soft: rgba(34,197,94,0.1);
     --radius: 14px;
     --radius-sm: 10px;
@@ -43,16 +43,17 @@
     font-family: 'Plus Jakarta Sans', sans-serif; 
     -webkit-font-smoothing: antialiased;
     background-image: 
-      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(236,72,153,0.04) 0%, transparent 50%);
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(6,182,212,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 100%, rgba(244,63,94,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 30% at 10% 60%, rgba(20,184,166,0.06) 0%, transparent 50%);
     background-attachment: fixed;
     min-height: 100vh;
   }
 
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.3); }
+  ::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.15); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(6,182,212,0.3); }
   input, textarea, select, button { font-family: inherit; }
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
@@ -61,12 +62,23 @@
   @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
   @keyframes slideIn { from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)} }
   @keyframes shimmer { 0%{background-position:-200% 0}100%{background-position:200% 0} }
-  @keyframes breathe { 0%,100%{box-shadow:0 0 20px rgba(99,102,241,0.15)}50%{box-shadow:0 0 35px rgba(99,102,241,0.3)} }
-  @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)} }
-  @keyframes borderGlow { 0%,100%{border-color:rgba(99,102,241,0.2)}50%{border-color:rgba(99,102,241,0.5)} }
+  @keyframes breathe { 0%,100%{box-shadow:0 0 20px rgba(6,182,212,0.15)}50%{box-shadow:0 0 40px rgba(6,182,212,0.4)} }
+  @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)} }
+  @keyframes borderGlow { 0%,100%{border-color:rgba(6,182,212,0.2)}50%{border-color:rgba(6,182,212,0.6)} }
+  @keyframes colorShift { 0%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(15deg)}100%{filter:hue-rotate(0deg)} }
+  @keyframes scaleIn { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
+  @keyframes slideUp { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+  @keyframes glowPulse { 0%,100%{opacity:0.5}50%{opacity:1} }
+  @keyframes orbFloat1 { 0%{transform:translate(0,0)}25%{transform:translate(30px,-20px)}50%{transform:translate(-10px,-40px)}75%{transform:translate(-30px,-10px)}100%{transform:translate(0,0)} }
+  @keyframes orbFloat2 { 0%{transform:translate(0,0)}25%{transform:translate(-20px,30px)}50%{transform:translate(20px,10px)}75%{transform:translate(-10px,-20px)}100%{transform:translate(0,0)} }
 
   .fade-up { animation: fadeUp .5s cubic-bezier(0.16,1,0.3,1) both; }
   .fade-in { animation: fadeIn .4s ease both; }
+  .scale-in { animation: scaleIn .4s cubic-bezier(0.16,1,0.3,1) both; }
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
 
   /* Glass panels */
   .glass-panel {
@@ -91,15 +103,17 @@
   }
   .input-glow:focus { 
     border-color: var(--blue); 
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.12), 0 4px 16px rgba(99,102,241,0.08);
-    background: rgba(22,22,36,0.9);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.15), 0 4px 20px rgba(6,182,212,0.1), 0 0 40px rgba(244,63,94,0.05);
+    background: rgba(22,22,36,0.95);
   }
   .input-glow::placeholder { color: var(--text-faint); }
 
   /* Buttons */
   .btn-primary {
     border: none;
-    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+    background: linear-gradient(135deg, #06b6d4 0%, #f43f5e 40%, #f43f5e 100%);
+    background-size: 200% 200%;
+    animation: colorShift 6s ease infinite;
     color: #fff;
     font-weight: 700;
     cursor: pointer;
@@ -112,20 +126,20 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    background: linear-gradient(135deg, transparent 20%, rgba(255,255,255,0.15) 50%, transparent 80%);
     background-size: 200% 100%;
-    animation: shimmer 3s ease infinite;
+    animation: shimmer 2.5s ease infinite;
     opacity: 0;
     transition: opacity 0.3s;
   }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(99,102,241,0.35); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(6,182,212,0.4), 0 0 0 1px rgba(244,63,94,0.3); }
   .btn-primary:hover::before { opacity: 1; }
   .btn-primary:active { transform: translateY(0); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; animation: none; }
 
   .btn-outline {
     background: transparent;
-    border: 1px solid rgba(99,102,241,0.3);
+    border: 1px solid rgba(6,182,212,0.3);
     color: var(--blue);
     font-weight: 700;
     cursor: pointer;
@@ -135,8 +149,9 @@
   }
   .btn-outline:hover { 
     border-color: var(--blue); 
-    background: rgba(99,102,241,0.06);
-    box-shadow: 0 4px 16px rgba(99,102,241,0.12);
+    background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(244,63,94,0.04));
+    box-shadow: 0 4px 20px rgba(6,182,212,0.15);
+    transform: translateY(-1px);
   }
   .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -146,9 +161,9 @@
     color: var(--text-dim);
     cursor: pointer;
     border-radius: 10px;
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
   }
-  .btn-ghost:hover { border-color: rgba(255,255,255,0.12); color: var(--text); background: rgba(255,255,255,0.02); }
+  .btn-ghost:hover { border-color: rgba(6,182,212,0.2); color: var(--text); background: rgba(6,182,212,0.04); transform: translateY(-1px); }
 
   /* Option cards */
   .opt-card {
@@ -179,14 +194,25 @@
     cursor: pointer;
     position: relative;
   }
-  .scene-card:hover { 
-    border-color: rgba(99,102,241,0.3);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    transform: translateY(-2px);
+  .scene-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, rgba(6,182,212,0.3), rgba(244,63,94,0.3));
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: -1;
   }
+  .scene-card:hover { 
+    border-color: transparent;
+    box-shadow: 0 12px 32px rgba(6,182,212,0.2), 0 4px 12px rgba(0,0,0,0.3);
+    transform: translateY(-4px);
+  }
+  .scene-card:hover::before { opacity: 1; }
   .scene-card.editing {
     border-color: var(--blue);
-    box-shadow: 0 8px 28px rgba(99,102,241,0.2);
+    box-shadow: 0 8px 28px rgba(6,182,212,0.25);
   }
 
   /* Tags */
@@ -218,7 +244,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, var(--border), transparent);
+    background: linear-gradient(90deg, rgba(6,182,212,0.2), rgba(244,63,94,0.1), transparent);
   }
 
   /* Filmstrip */
@@ -230,10 +256,11 @@
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
   }
-  .filmstrip-item:hover { border-color: rgba(99,102,241,0.3); }
+  .filmstrip-item:hover { border-color: rgba(6,182,212,0.4); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
   .filmstrip-item.active { 
     border-color: var(--blue); 
-    box-shadow: 0 4px 16px rgba(99,102,241,0.2);
+    box-shadow: 0 4px 20px rgba(6,182,212,0.25);
+    transform: translateY(-2px);
   }
 
   /* Video player frame */
@@ -241,9 +268,9 @@
     background: var(--bg-card);
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(6,182,212,0.1);
     position: relative;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset, 0 0 80px rgba(6,182,212,0.06);
   }
 
   /* Noise texture overlay */
@@ -262,49 +289,61 @@
     align-items: center;
     padding: 10px 20px;
     border-bottom: 1px solid var(--border);
-    background: rgba(10,10,18,0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(10,10,18,0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     position: sticky;
     top: 0;
     z-index: 100;
   }
+  .nav-bar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(6,182,212,0.3), rgba(244,63,94,0.2), transparent);
+  }
 
   /* Chip template buttons */
   .chip-btn {
-    padding: 6px 14px;
+    padding: 7px 16px;
     border-radius: 100px;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--text-dim);
     font-size: 12px;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+    overflow: hidden;
   }
   .chip-btn:hover { 
-    border-color: rgba(99,102,241,0.3); 
+    border-color: rgba(6,182,212,0.4); 
     color: var(--text);
-    background: rgba(99,102,241,0.04);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, rgba(6,182,212,0.06), rgba(244,63,94,0.04));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(6,182,212,0.1);
   }
 
   /* Play button overlay */
   .play-btn {
-    width: 60px; height: 60px;
+    width: 64px; height: 64px;
     border-radius: 50%;
-    background: rgba(99,102,241,0.85);
+    background: linear-gradient(135deg, rgba(6,182,212,0.9), rgba(244,63,94,0.9));
     backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
-    box-shadow: 0 8px 28px rgba(99,102,241,0.4);
+    box-shadow: 0 8px 28px rgba(6,182,212,0.4), 0 0 60px rgba(244,63,94,0.15);
     animation: breathe 3s ease-in-out infinite;
   }
   .play-btn:hover {
-    transform: scale(1.08);
-    box-shadow: 0 12px 36px rgba(99,102,241,0.5);
+    transform: scale(1.12);
+    box-shadow: 0 12px 40px rgba(6,182,212,0.5), 0 0 80px rgba(244,63,94,0.2);
   }
 
   /* Image reference upload area */
@@ -313,19 +352,21 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px;
+    padding: 16px;
     border-radius: 12px;
-    border: 1px dashed rgba(99,102,241,0.2);
-    background: transparent;
+    border: 1px dashed rgba(6,182,212,0.25);
+    background: linear-gradient(135deg, rgba(6,182,212,0.02), rgba(244,63,94,0.02));
     color: var(--text-faint);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.3s;
   }
   .upload-area:hover { 
-    border-color: rgba(99,102,241,0.4); 
-    background: rgba(99,102,241,0.03);
+    border-color: rgba(6,182,212,0.5); 
+    background: linear-gradient(135deg, rgba(6,182,212,0.06), rgba(244,63,94,0.04));
     color: var(--text-dim);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(6,182,212,0.08);
   }
 
   /* Narration subtitle overlay */
@@ -334,8 +375,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.92));
-    padding: 32px 24px 20px;
+    background: linear-gradient(transparent, rgba(10,10,18,0.95));
+    padding: 36px 24px 20px;
   }
 </style>
 </head>
@@ -346,7 +387,7 @@ const {useState,useEffect,useRef} = React;
 
 const DEFAULT_CONFIG = { 
   supabaseUrl: "https://ebuslebkgzqqolleunxk.supabase.co", 
-  supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVidXNsZWJrZ3pxcW9sbGV1bnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzEwNjIsImV4cCI6MjA4NzEwNzA2Mn0.1OijWAsSTv-tVI8h0-jQ3K-5k6NGvjvlNYf55QiEE-M", 
+  supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVidXNsZWJrZ3pxcW9sbGV1bnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzEwNjIsImV4cCI6MjA4NzEwNzA2Mn0.1OijWAsSTv-tVI8h0-jQ3K-5k6NGvjvlNYf55QiEE-MeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVidXNsZWJrZ3pxcW9sbGV1bnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzEwNjIsImV4cCI6MjA4NzEwNzA2Mn0.1OijWAsSTv-tVI8h0-jQ3K-5k6NGvjvlNYf55QiEE-M", 
   n8nWebhook: "https://n8n.almaquinta.com/webhook/generate-scenes" 
 };
 
@@ -380,10 +421,10 @@ function ConfigModal({config,setConfig,onSave}){
   const fields=[{k:"supabaseUrl",l:"Supabase URL",p:"https://xxxxx.supabase.co"},{k:"supabaseKey",l:"Supabase Key",p:"eyJhbGci..."},{k:"n8nWebhook",l:"n8n Webhook",p:"https://..."}];
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,backdropFilter:"blur(20px)"}}>
-      <div className="fade-up" style={{background:"linear-gradient(180deg,rgba(17,17,25,0.97),rgba(17,17,25,0.92))",backdropFilter:"blur(32px)",WebkitBackdropFilter:"blur(32px)",border:"1px solid rgba(99,102,241,0.1)",borderRadius:24,padding:36,maxWidth:440,width:"92%",boxShadow:"0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset"}}>
+      <div className="fade-up" style={{background:"linear-gradient(180deg,rgba(17,17,25,0.97),rgba(17,17,25,0.92))",backdropFilter:"blur(32px)",WebkitBackdropFilter:"blur(32px)",border:"1px solid rgba(6,182,212,0.1)",borderRadius:24,padding:36,maxWidth:440,width:"92%",boxShadow:"0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset"}}>
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:28}}>
-          <div style={{width:44,height:44,borderRadius:14,background:"linear-gradient(135deg,rgba(99,102,241,0.2),rgba(99,102,241,0.08))",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--blue)",boxShadow:"0 4px 16px rgba(99,102,241,0.15)"}}><I.film/></div>
-          <div><div style={{fontSize:20,fontWeight:800,letterSpacing:-.5,background:"linear-gradient(135deg,#fff,#a5b4fc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>ALMAV Studio</div><div style={{fontSize:11,color:"var(--text-faint)",marginTop:2}}>Configuración de conexión</div></div>
+          <div style={{width:44,height:44,borderRadius:14,background:"linear-gradient(135deg,rgba(6,182,212,0.2),rgba(6,182,212,0.08))",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--blue)",boxShadow:"0 4px 16px rgba(6,182,212,0.15)"}}><I.film/></div>
+          <div><div style={{fontSize:20,fontWeight:800,letterSpacing:-.5,background:"linear-gradient(135deg,#fff,#67e8f9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>ALMAV Studio</div><div style={{fontSize:11,color:"var(--text-faint)",marginTop:2}}>Configuración de conexión</div></div>
         </div>
         {fields.map(f=>(
           <div key={f.k} style={{marginBottom:12}}>
@@ -428,12 +469,27 @@ function Screen1({onGenerate,loading,statusMsg}){
   const[scenes,setScenes]=useState(null);
   const[aspect,setAspect]=useState(null);
   const[style,setStyle]=useState(null);
-  const[voice,setVoice]=useState(null);
-  const[anim,setAnim]=useState(null);
-  const[trans,setTrans]=useState(null);
   const[refImg,setRefImg]=useState(null);
   const[refPreview,setRefPreview]=useState(null);
+  const[enhancing,setEnhancing]=useState(false);
   const toggle=(cur,val,set)=>set(cur===val?null:val);
+
+  const enhancePrompt = () => {
+    if(!script.trim()) return;
+    setEnhancing(true);
+    const tips = [
+      "iluminación cinematográfica, golden hour, sombras dramáticas",
+      "texturas detalladas, profundidad de campo, composición rule of thirds",
+      "ambiente envolvente, colores vibrantes, contraste alto",
+      "perspectiva única, detalles hiperrealistas, atmósfera emocional",
+      "8K, fotorrealista, lente 35mm, bokeh suave en el fondo"
+    ];
+    const randomTips = tips.sort(() => Math.random() - 0.5).slice(0, 2).join(", ");
+    setTimeout(() => {
+      setScript(prev => `${prev}. Detalles: ${randomTips}`);
+      setEnhancing(false);
+    }, 800);
+  };
 
   const handleImageUpload=(e)=>{
     const file=e.target.files[0];
@@ -449,34 +505,9 @@ function Screen1({onGenerate,loading,statusMsg}){
     {id:"CINEMATOGRAFICO",label:"Cinematic",color:"#f97316",bg:"linear-gradient(135deg,#431407,#7c2d12)"},
     {id:"3D",label:"3D Render",color:"#06b6d4",bg:"linear-gradient(135deg,#083344,#155e75)"},
     {id:"REALISMO",label:"Photo Real",color:"#22c55e",bg:"linear-gradient(135deg,#052e16,#166534)"},
-    {id:"ANIME",label:"Anime",color:"#ec4899",bg:"linear-gradient(135deg,#500724,#9d174d)"},
+    {id:"ANIME",label:"Anime",color:"#f43f5e",bg:"linear-gradient(135deg,#500724,#9d174d)"},
     {id:"ACUARELA",label:"Watercolor",color:"#a78bfa",bg:"linear-gradient(135deg,#2e1065,#5b21b6)"},
     {id:"RETRO",label:"Retro 80s",color:"#fbbf24",bg:"linear-gradient(135deg,#451a03,#92400e)"},
-  ];
-
-  const animList=[
-    {id:"zoomIn",label:"Zoom In",icon:"🔍"},
-    {id:"zoomOut",label:"Zoom Out",icon:"🔎"},
-    {id:"slideLeft",label:"Slide Left",icon:"◀"},
-    {id:"slideRight",label:"Slide Right",icon:"▶"},
-    {id:"slideUp",label:"Slide Up",icon:"▲"},
-    {id:"slideDown",label:"Slide Down",icon:"▼"},
-  ];
-
-  const transList=[
-    {id:"fade",label:"Fade",icon:"🌫"},
-    {id:"dissolve",label:"Dissolve",icon:"✨"},
-    {id:"wipeLeft",label:"Wipe Left",icon:"⬅"},
-    {id:"wipeRight",label:"Wipe Right",icon:"➡"},
-    {id:"slideLeft",label:"Slide L",icon:"📱"},
-    {id:"slideRight",label:"Slide R",icon:"📲"},
-  ];
-
-  const voiceList=[
-    {id:"21m00Tcm4TlvDq8ikWAM",label:"Rachel",tag:"F · Calm"},
-    {id:"ErXwobaYiN019PkySvjV",label:"Antoni",tag:"M · Warm"},
-    {id:"EXAVITQu4vr4xnSDxMaL",label:"Bella",tag:"F · Soft"},
-    {id:"29vD33N1CtxCmqQRPOHJ",label:"Drew",tag:"M · Deep"},
   ];
 
   const buildPrompt=(mode)=>{
@@ -484,10 +515,8 @@ function Screen1({onGenerate,loading,statusMsg}){
     let p=`Crea ${n} escenas para: ${script}.`;
     if(aspect)p+=` Aspecto: ${aspect}.`;
     if(style)p+=` Estilo visual: ${style}.`;
-    if(anim)p+=` Animación: ${anim}.`;
-    if(trans)p+=` Transición: ${trans}.`;
     if(refImg)p+=` Usa la imagen de referencia como guía visual.`;
-    return{chatInput:p,numScenes:n,voiceId:voice,mode,animation:anim,transition:trans};
+    return{chatInput:p,numScenes:n,voiceId:"",mode,animation:"zoomIn",transition:"fade"};
   };
 
   return(
@@ -495,7 +524,7 @@ function Screen1({onGenerate,loading,statusMsg}){
       {/* LEFT: Prompt area */}
       <div style={{flex:1,padding:"32px 36px",display:"flex",flexDirection:"column"}}>
         <div style={{marginBottom:24}}>
-          <h1 style={{fontSize:28,fontWeight:800,letterSpacing:-.5,marginBottom:8,background:"linear-gradient(135deg,#fff 0%,#a5b4fc 60%,#c084fc 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Crea tu video con IA</h1>
+          <h1 style={{fontSize:28,fontWeight:800,letterSpacing:-.5,marginBottom:8,background:"linear-gradient(135deg,#fff 0%,#67e8f9 60%,#fb7185 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Crea tu video con IA</h1>
           <p style={{fontSize:13,color:"var(--text-dim)",lineHeight:1.6}}>Describe tu escena, adjunta referencia visual o usa las opciones del panel</p>
         </div>
 
@@ -532,7 +561,13 @@ function Screen1({onGenerate,loading,statusMsg}){
             placeholder="Describe tu video con todo el detalle que quieras: personajes, ambiente, iluminación, estilo, emoción..."
             className="input-glow"
             style={{width:"100%",height:"100%",minHeight:180,borderRadius:14,padding:20,resize:"none"}}/>
-          <div style={{position:"absolute",bottom:12,right:16,fontSize:11,color:"var(--text-faint)"}}>{script.length}</div>
+          <div style={{position:"absolute",bottom:12,right:16,display:"flex",alignItems:"center",gap:8}}>
+            <button onClick={enhancePrompt} disabled={enhancing||!script.trim()} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(6,182,212,0.2)",background:"rgba(6,182,212,0.06)",color:"var(--blue)",fontSize:10,fontWeight:600,cursor:"pointer",transition:"all .2s",display:"flex",alignItems:"center",gap:4}}
+              onMouseOver={e=>e.currentTarget.style.background="rgba(6,182,212,0.12)"} onMouseOut={e=>e.currentTarget.style.background="rgba(6,182,212,0.06)"}>
+              {enhancing?<Spin s={10}/>:<I.spark/>} {enhancing?"Mejorando...":"Mejorar prompt"}
+            </button>
+            <span style={{fontSize:11,color:"var(--text-faint)"}}>{script.length}</span>
+          </div>
         </div>
 
         {/* Summary bar */}
@@ -540,22 +575,19 @@ function Screen1({onGenerate,loading,statusMsg}){
           {scenes&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>{scenes} escenas</span>}
           {style&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>{style}</span>}
           {aspect&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>{aspect}</span>}
-          {anim&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--teal-soft)",color:"var(--teal)",fontSize:10,fontWeight:600}}>🎬 {anim}</span>}
-          {trans&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--teal-soft)",color:"var(--teal)",fontSize:10,fontWeight:600}}>🔀 {trans}</span>}
-          {voice&&<span style={{padding:"3px 8px",borderRadius:6,background:"var(--blue-soft)",color:"var(--blue)",fontSize:10,fontWeight:600}}>🎙 Voz</span>}
-          {refImg&&<span style={{padding:"3px 8px",borderRadius:6,background:"rgba(236,72,153,.1)",color:"var(--pink)",fontSize:10,fontWeight:600}}>📷 Ref</span>}
-          {!scenes&&!style&&!aspect&&!voice&&!anim&&!trans&&!refImg&&<span style={{fontSize:11,color:"var(--text-faint)"}}>⚡ Modo libre — todo se describe en el prompt</span>}
+          {refImg&&<span style={{padding:"3px 8px",borderRadius:6,background:"rgba(244,63,94,.1)",color:"var(--pink)",fontSize:10,fontWeight:600}}>📷 Ref</span>}
+          {!scenes&&!style&&!aspect&&!refImg&&<span style={{fontSize:11,color:"var(--text-faint)"}}>⚡ Modo libre — todo se describe en el prompt</span>}
         </div>
 
         {/* Dual buttons */}
         <div style={{display:"flex",gap:10}}>
-          <button onClick={()=>{const p=buildPrompt("scene");onGenerate(p.chatInput,p.numScenes,aspect,style,voice,"scene",p.animation,p.transition)}}
+          <button onClick={()=>{const p=buildPrompt("scene");onGenerate(p.chatInput,p.numScenes,aspect,style,"","scene","zoomIn","fade")}}
             disabled={loading||!script.trim()}
             className="btn-outline"
             style={{flex:1,padding:"14px",borderRadius:12,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {loading?<Spin s={14}/>:<I.img/>} Generar Escena
           </button>
-          <button onClick={()=>{const p=buildPrompt("video");onGenerate(p.chatInput,p.numScenes,aspect,style,voice,"video",p.animation,p.transition)}}
+          <button onClick={()=>{const p=buildPrompt("video");onGenerate(p.chatInput,p.numScenes,aspect,style,"","video","zoomIn","fade")}}
             disabled={loading||!script.trim()}
             className="btn-primary"
             style={{flex:1,padding:"14px",borderRadius:12,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -606,52 +638,6 @@ function Screen1({onGenerate,loading,statusMsg}){
             ))}
           </div>
         </div>
-
-        {/* Animation */}
-        <div style={{marginBottom:20}}>
-          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🎬 Animación</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>
-            {animList.map(a=>(
-              <button key={a.id} onClick={()=>toggle(anim,a.id,setAnim)}
-                style={{padding:"8px 4px",borderRadius:8,border:anim===a.id?"1.5px solid var(--teal)":"1px solid var(--border)",
-                  background:anim===a.id?"var(--teal-soft)":"transparent",cursor:"pointer",transition:'all .2s',textAlign:"center"}}>
-                <div style={{fontSize:14,marginBottom:2}}>{a.icon}</div>
-                <div style={{fontSize:9,fontWeight:600,color:anim===a.id?"var(--teal)":"var(--text-faint)"}}>{a.label}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Transitions */}
-        <div style={{marginBottom:20}}>
-          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🔀 Transición</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>
-            {transList.map(t=>(
-              <button key={t.id} onClick={()=>toggle(trans,t.id,setTrans)}
-                style={{padding:"8px 4px",borderRadius:8,border:trans===t.id?"1.5px solid var(--teal)":"1px solid var(--border)",
-                  background:trans===t.id?"var(--teal-soft)":"transparent",cursor:"pointer",transition:'all .2s',textAlign:"center"}}>
-                <div style={{fontSize:14,marginBottom:2}}>{t.icon}</div>
-                <div style={{fontSize:9,fontWeight:600,color:trans===t.id?"var(--teal)":"var(--text-faint)"}}>{t.label}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Voice */}
-        <div>
-          <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:1,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🎙 Voz</div>
-          <div style={{display:"flex",flexDirection:"column",gap:5}}>
-            {voiceList.map(v=>(
-              <button key={v.id} onClick={()=>toggle(voice,v.id,setVoice)}
-                style={{padding:"9px 10px",borderRadius:8,border:voice===v.id?"1.5px solid var(--blue)":"1px solid var(--border)",
-                  background:voice===v.id?"var(--blue-soft)":"transparent",cursor:"pointer",transition:'all .2s',
-                  display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{fontSize:12,fontWeight:600,color:voice===v.id?"var(--blue)":"var(--text-dim)"}}>{v.label}</span>
-                <span style={{fontSize:9,color:"var(--text-faint)"}}>{v.tag}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -664,12 +650,15 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
   const[regenLoading,setRegenLoading]=useState(false);
   const[regenStatus,setRegenStatus]=useState("");
   const[editScene,setEditScene]=useState(null);
+  const[regenRef,setRegenRef]=useState(null);
+  const[regenRefPreview,setRegenRefPreview]=useState(null);
   const[originalPrompts]=useState(()=>{
     const map={};
     scenes.forEach(s=>{map[s.id]=s.prompt_image});
     return map;
   });
   const toggleSel=id=>{const s=new Set(sel);s.has(id)?s.delete(id):s.add(id);setSel(s)};
+  const selectEditScene=(id)=>{setEditScene(editScene===id?null:id);setRegenPrompt("");setRegenRef(null);setRegenRefPreview(null)};
 
   const regenerateImage = async (sceneId) => {
     if(!regenPrompt.trim()) return;
@@ -681,7 +670,8 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
 
     // Usar siempre el prompt ORIGINAL + corrección nueva (no acumular)
     const basePrompt = originalPrompts[sceneId] || scene.prompt_image.split('. CRITICAL MODIFICATION:')[0];
-    const newPrompt = `${basePrompt}. CRITICAL MODIFICATION: ${regenPrompt}. Keep everything else exactly the same.`;
+    const refContext = regenRefPreview ? " Use the uploaded reference image as visual guide for style, colors, composition and mood." : "";
+    const newPrompt = `${basePrompt}. CRITICAL MODIFICATION: ${regenPrompt}${refContext}. Keep everything else exactly the same.`;
     const oldImage = scene.image_url;
     
     try {
@@ -749,7 +739,7 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
       <div style={{width:260,borderRight:"1px solid var(--border)",padding:20,background:"var(--bg-panel)",flexShrink:0,display:"flex",flexDirection:"column",overflowY:"auto"}}>
         <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:12}}>Escenas</div>
         {scenes.map(s=>(
-          <div key={s.id} onClick={()=>{toggleSel(s.id);setEditScene(editScene===s.id?null:s.id)}} style={{padding:"10px",borderRadius:8,marginBottom:4,background:editScene===s.id?"var(--blue-soft)":sel.has(s.id)?"rgba(99,102,241,0.06)":"transparent",border:`1px solid ${editScene===s.id?"var(--border-active)":sel.has(s.id)?"rgba(99,102,241,0.15)":"transparent"}`,cursor:"pointer",transition:'all .2s'}}>
+          <div key={s.id} onClick={()=>{toggleSel(s.id);selectEditScene(s.id)}} style={{padding:"10px",borderRadius:8,marginBottom:4,background:editScene===s.id?"var(--blue-soft)":sel.has(s.id)?"rgba(6,182,212,0.06)":"transparent",border:`1px solid ${editScene===s.id?"var(--border-active)":sel.has(s.id)?"rgba(6,182,212,0.15)":"transparent"}`,cursor:"pointer",transition:'all .2s'}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <span style={{fontSize:12,fontWeight:600,color:editScene===s.id?"var(--blue)":"var(--text-dim)"}}>Scene {s.scene_number}</span>
               <span style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:s.status==="image_ready"?"var(--green-soft)":"rgba(255,255,255,.03)",color:s.status==="image_ready"?"var(--green)":"var(--text-faint)",fontWeight:600}}>{s.status==="image_ready"?"Ready":s.status}</span>
@@ -765,21 +755,53 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
             
             {/* Current image preview */}
             {scenes.find(s=>s.id===editScene)?.image_url && (
-              <div style={{borderRadius:6,overflow:"hidden",marginBottom:8,aspectRatio:"16/9"}}>
+              <div style={{borderRadius:6,overflow:"hidden",marginBottom:8,aspectRatio:"16/9",position:"relative"}}>
                 <img src={scenes.find(s=>s.id===editScene).image_url} style={{width:"100%",height:"100%",objectFit:"cover",opacity:.7}}/>
+                <div style={{position:"absolute",top:4,left:4,padding:"2px 6px",borderRadius:4,background:"rgba(0,0,0,0.6)",fontSize:8,color:"var(--text-faint)",fontWeight:600}}>ACTUAL</div>
               </div>
             )}
 
+            {/* Reference image upload */}
+            <div style={{marginBottom:8}}>
+              {regenRefPreview ? (
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:8,background:"var(--bg)",borderRadius:8,border:"1px solid rgba(6,182,212,0.2)"}}>
+                  <div style={{position:"relative",flexShrink:0}}>
+                    <img src={regenRefPreview} style={{width:56,height:42,objectFit:"cover",borderRadius:4}}/>
+                    <div style={{position:"absolute",top:-3,left:-3,padding:"1px 4px",borderRadius:3,background:"var(--blue)",fontSize:7,color:"#fff",fontWeight:700}}>REF</div>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:600,color:"var(--text)"}}>Imagen de referencia</div>
+                    <div style={{fontSize:9,color:"var(--text-faint)",marginTop:1}}>Se usará como guía visual</div>
+                  </div>
+                  <button onClick={()=>{setRegenRef(null);setRegenRefPreview(null)}} style={{padding:"3px 6px",borderRadius:4,border:"1px solid rgba(239,68,68,.3)",background:"rgba(239,68,68,.06)",color:"#ef4444",fontSize:9,cursor:"pointer",flexShrink:0}}>✕</button>
+                </div>
+              ) : (
+                <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:10,borderRadius:8,border:"1px dashed rgba(6,182,212,0.2)",background:"transparent",color:"var(--text-faint)",fontSize:10,cursor:"pointer",transition:"all .2s"}}
+                  onMouseOver={e=>{e.currentTarget.style.borderColor="rgba(6,182,212,0.4)";e.currentTarget.style.background="rgba(6,182,212,0.03)"}}
+                  onMouseOut={e=>{e.currentTarget.style.borderColor="rgba(6,182,212,0.2)";e.currentTarget.style.background="transparent"}}>
+                  📷 Subir imagen de referencia
+                  <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
+                    const file=e.target.files[0];
+                    if(!file)return;
+                    setRegenRef(file);
+                    const reader=new FileReader();
+                    reader.onload=ev=>setRegenRefPreview(ev.target.result);
+                    reader.readAsDataURL(file);
+                  }}/>
+                </label>
+              )}
+            </div>
+
             <textarea value={regenPrompt} onChange={e=>setRegenPrompt(e.target.value)}
-              placeholder="Describe qué quieres cambiar... ej: 'Que sea de noche', 'Agrega lluvia', 'Cambia los colores a tonos fríos'"
+              placeholder={regenRefPreview ? "Describe qué quieres tomar de la referencia... ej: 'Usa los colores de esta imagen', 'Imita la composición', 'Mismo estilo de iluminación'" : "Describe qué quieres cambiar... ej: 'Que sea de noche', 'Agrega lluvia', 'Cambia los colores a tonos fríos'"}
               style={{width:"100%",height:70,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:10,color:"var(--text)",fontSize:11,resize:"none",outline:"none",lineHeight:1.5}}
               onFocus={e=>e.target.style.borderColor="var(--blue)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.06)"}/>
             
-            <button onClick={()=>regenerateImage(editScene)} disabled={regenLoading||!regenPrompt.trim()}
+            <button onClick={()=>{regenerateImage(editScene);setRegenRef(null);setRegenRefPreview(null)}} disabled={regenLoading||!regenPrompt.trim()}
               style={{width:"100%",marginTop:8,padding:"9px",borderRadius:8,border:"none",
                 background:regenLoading?"var(--bg-hover)":"var(--blue)",color:regenLoading?"var(--text-dim)":"#fff",
                 fontSize:11,fontWeight:700,cursor:regenLoading?"wait":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              {regenLoading?<><Spin s={12}/> Generando...</>:"🎨 Regenerar Imagen"}
+              {regenLoading?<><Spin s={12}/> Generando...</>:regenRefPreview?"🎨 Regenerar con Referencia":"🎨 Regenerar Imagen"}
             </button>
             
             {regenStatus&&<div style={{marginTop:6,fontSize:10,color:regenStatus.includes("Error")?"#ef4444":regenStatus.includes("!")?"var(--green)":"var(--blue)",textAlign:"center"}}>{regenStatus}</div>}
@@ -796,14 +818,37 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <div>
             <h2 style={{fontSize:20,fontWeight:800,letterSpacing:-.3}}>Storyboard</h2>
-            <p style={{fontSize:12,color:"var(--text-dim)",marginTop:2}}>{scenes.length} escenas · Click en una escena para editar</p>
+            <p style={{fontSize:12,color:"var(--text-dim)",marginTop:2}}>{scenes.length > 0 ? `${scenes.length} escenas · Click en una escena para editar` : "Esperando escenas..."}</p>
           </div>
-          <button onClick={onNext} style={{padding:"10px 20px",borderRadius:10,border:"none",background:"var(--blue)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>Generar Video <I.arrow/></button>
+          {scenes.length > 0 && <button onClick={onNext} style={{padding:"10px 20px",borderRadius:10,border:"none",background:"var(--blue)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>Generar Video <I.arrow/></button>}
         </div>
+        
+        {scenes.length === 0 ? (
+          <div className="fade-up" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:400,textAlign:"center"}}>
+            {/* Animated placeholder cards */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:32,width:"100%",maxWidth:500}}>
+              {[1,2,3].map(n=>(
+                <div key={n} style={{aspectRatio:"16/9",borderRadius:12,border:"1px dashed var(--border)",background:"var(--bg-input)",position:"relative",overflow:"hidden",animation:`fadeUp 0.5s ease ${n*0.15}s both`}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(6,182,212,0.03),transparent)",backgroundSize:"200% 100%",animation:"shimmer 2s ease infinite"}}/>
+                  <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6}}>
+                    <div style={{width:32,height:32,borderRadius:8,background:"var(--blue-soft)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--blue)",opacity:0.5}}><I.img/></div>
+                    <span style={{fontSize:10,color:"var(--text-faint)"}}>Escena {n}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,var(--blue-soft),rgba(6,182,212,0.05))",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16,animation:"float 3s ease-in-out infinite"}}>
+              <I.film/>
+            </div>
+            <h3 style={{fontSize:16,fontWeight:700,color:"var(--text)",marginBottom:8}}>Tu storyboard aparecerá aquí</h3>
+            <p style={{fontSize:12,color:"var(--text-faint)",maxWidth:360,lineHeight:1.6}}>Genera escenas desde la pantalla anterior. Cada escena tendrá su imagen, narración y podrás editarla con prompts de corrección.</p>
+            <button onClick={onBack} className="btn-outline" style={{marginTop:20,padding:"10px 24px",fontSize:12,display:"flex",alignItems:"center",gap:6}}><I.back/> Ir a crear escenas</button>
+          </div>
+        ) : (
         <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(scenes.length,4)},1fr)`,gap:14}}>
           {scenes.map(sc=>(
             <div key={sc.id} className="fade-up">
-              <div onClick={()=>{toggleSel(sc.id);setEditScene(editScene===sc.id?null:sc.id)}} style={{position:"relative",borderRadius:10,overflow:"hidden",aspectRatio:"16/9",border:editScene===sc.id?"2px solid var(--blue)":sel.has(sc.id)?"1.5px solid rgba(99,102,241,0.4)":"1px solid var(--border)",cursor:"pointer",transition:"all .3s",boxShadow:editScene===sc.id?"0 4px 16px var(--blue-glow)":"none"}}>
+              <div onClick={()=>{toggleSel(sc.id);selectEditScene(sc.id)}} style={{position:"relative",borderRadius:10,overflow:"hidden",aspectRatio:"16/9",border:editScene===sc.id?"2px solid var(--blue)":sel.has(sc.id)?"1.5px solid rgba(6,182,212,0.4)":"1px solid var(--border)",cursor:"pointer",transition:"all .3s",boxShadow:editScene===sc.id?"0 4px 16px var(--blue-glow)":"none"}}>
                 {sc.image_url?<img src={sc.image_url} style={{width:"100%",height:"100%",objectFit:"cover"}}/>:
                 <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg-input)",color:"var(--text-faint)"}}><I.img/></div>}
                 {editScene===sc.id&&<div style={{position:"absolute",top:6,right:6,padding:"3px 8px",borderRadius:4,background:"var(--blue)",fontSize:9,fontWeight:700,color:"#fff"}}>Editando</div>}
@@ -812,7 +857,7 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
               <div style={{marginTop:6}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <span style={{fontSize:11,fontWeight:700,color:editScene===sc.id?"var(--blue)":"var(--text-dim)"}}>E{sc.scene_number}</span>
-                  <button onClick={(e)=>{e.stopPropagation();setEditScene(sc.id);setRegenPrompt("")}} 
+                  <button onClick={(e)=>{e.stopPropagation();selectEditScene(sc.id)}} 
                     style={{fontSize:9,padding:"2px 6px",borderRadius:4,border:"1px solid var(--border)",background:"transparent",color:"var(--text-faint)",cursor:"pointer"}}
                     onMouseOver={e=>{e.target.style.borderColor="var(--blue)";e.target.style.color="var(--blue)"}}
                     onMouseOut={e=>{e.target.style.borderColor="rgba(255,255,255,0.06)";e.target.style.color="var(--text-faint)"}}>✏️ Editar</button>
@@ -822,6 +867,7 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );
@@ -830,6 +876,14 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
 /* ─── Screen 3: Video ─── */
 function Screen3({scenes,config,onNext,onBack,onVideoReady}){
   const[cur,setCur]=useState(0);const[gen,setGen]=useState(false);const[url,setUrl]=useState(null);const[prog,setProg]=useState("");
+  
+  // Auto slideshow while generating
+  useEffect(()=>{
+    if(!gen||url||scenes.length<=1) return;
+    const interval=setInterval(()=>{setCur(c=>(c+1)%scenes.length)},2500);
+    return ()=>clearInterval(interval);
+  },[gen,url,scenes.length]);
+
   const genVideo=async()=>{
     setGen(true);setProg("Buscando video...");
     try{
@@ -863,6 +917,35 @@ function Screen3({scenes,config,onNext,onBack,onVideoReady}){
         </div>
       </div>
       <div style={{flex:1,padding:28}}>
+        {scenes.length === 0 || !scenes[0]?.image_url ? (
+          <div className="fade-up" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:400,textAlign:"center"}}>
+            {/* Animated video placeholder */}
+            <div style={{width:"100%",maxWidth:500,aspectRatio:"16/9",borderRadius:16,border:"1px dashed var(--border)",background:"var(--bg-input)",position:"relative",overflow:"hidden",marginBottom:32}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,rgba(6,182,212,0.03),rgba(244,63,94,0.02))",animation:"shimmer 3s ease infinite",backgroundSize:"200% 100%"}}/>
+              <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
+                <div style={{width:56,height:56,borderRadius:"50%",background:"var(--blue-soft)",display:"flex",alignItems:"center",justifyContent:"center",animation:"float 3s ease-in-out infinite"}}>
+                  <I.play/>
+                </div>
+                <div style={{fontSize:12,color:"var(--text-faint)"}}>Preview del video</div>
+              </div>
+              {/* Fake timeline bar */}
+              <div style={{position:"absolute",bottom:12,left:16,right:16,display:"flex",alignItems:"center",gap:8}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:"var(--blue-soft)"}}/>
+                <div style={{flex:1,height:3,borderRadius:2,background:"var(--border)",position:"relative",overflow:"hidden"}}>
+                  <div style={{width:"35%",height:"100%",borderRadius:2,background:"var(--blue)",opacity:0.3}}/>
+                </div>
+                <span style={{fontSize:9,color:"var(--text-faint)"}}> 0:00</span>
+              </div>
+            </div>
+            <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,var(--blue-soft),rgba(6,182,212,0.05))",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16,animation:"breathe 3s ease-in-out infinite"}}>
+              <I.film/>
+            </div>
+            <h3 style={{fontSize:16,fontWeight:700,color:"var(--text)",marginBottom:8}}>Tu video aparecerá aquí</h3>
+            <p style={{fontSize:12,color:"var(--text-faint)",maxWidth:380,lineHeight:1.6}}>Primero genera las escenas con imágenes, luego haz clic en "Crear Video" para renderizar tu video con subtítulos y transiciones.</p>
+            <button onClick={onBack} className="btn-outline" style={{marginTop:20,padding:"10px 24px",fontSize:12,display:"flex",alignItems:"center",gap:6}}><I.back/> Ir al storyboard</button>
+          </div>
+        ) : (
+        <>
         <div style={{display:"flex",gap:6,marginBottom:12,overflowX:"auto"}}>
           {scenes.map((s,i)=>(
             <div key={s.id} onClick={()=>setCur(i)} style={{width:90,aspectRatio:"16/9",borderRadius:8,overflow:"hidden",flexShrink:0,border:cur===i?"2px solid var(--blue)":"1px solid var(--border)",cursor:"pointer",opacity:cur===i?1:.5,transition:"all .3s"}}>
@@ -872,26 +955,40 @@ function Screen3({scenes,config,onNext,onBack,onVideoReady}){
         </div>
         <div style={{background:"var(--bg-card)",borderRadius:14,overflow:"hidden",border:"1px solid var(--border)",position:"relative",aspectRatio:"16/9",maxHeight:460}}>
           {url?<video src={url} controls style={{width:"100%",height:"100%",objectFit:"contain"}}/>:(
-            <>{scenes[cur]?.image_url&&<img src={scenes[cur].image_url} style={{width:"100%",height:"100%",objectFit:"cover",transition:"all .4s"}}/>}
+            <>{scenes[cur]?.image_url&&<img src={scenes[cur].image_url} style={{width:"100%",height:"100%",objectFit:"cover",transition:"opacity .6s, transform .6s",transform:"scale(1.02)"}}/>}
               {scenes[cur]?.narration_text&&<div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(transparent,rgba(0,0,0,.9))",padding:"28px 20px 16px"}}><p style={{color:"#fff",fontSize:13,textAlign:"center",lineHeight:1.6}}>{scenes[cur].narration_text}</p></div>}
-              <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div onClick={genVideo} style={{width:56,height:56,borderRadius:"50%",background:"rgba(99,102,241,.8)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",backdropFilter:"blur(8px)",boxShadow:"0 8px 24px var(--blue-glow)"}}><I.play/></div></div>
+              {gen ? (
+                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.3)",backdropFilter:"blur(2px)"}}>
+                  <Spin s={32}/>
+                  <div style={{marginTop:12,fontSize:13,color:"#fff",fontWeight:600}}>Generando video...</div>
+                  <div style={{display:"flex",gap:4,marginTop:10}}>{scenes.map((_,i)=>(
+                    <div key={i} style={{width:8,height:8,borderRadius:"50%",background:cur===i?"var(--blue)":"rgba(255,255,255,0.3)",transition:"all .3s"}}/>
+                  ))}</div>
+                </div>
+              ) : (
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div onClick={genVideo} className="play-btn"><I.play/></div></div>
+              )}
             </>
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
   );
 }
 
 /* ─── Screen 4: Export ─── */
-function Screen4({scenes,videoUrl,onBack}){
+function Screen4({scenes,videoUrl,onBack,history}){
   const[sp,setSp]=useState(false);
   const[copied,setCopied]=useState(false);
+  const[showHistory,setShowHistory]=useState(false);
   const speak=()=>{if(!window.speechSynthesis)return;setSp(true);const t=scenes.map(s=>s.narration_text).filter(Boolean).join(". ");const u=new SpeechSynthesisUtterance(t);u.lang="es-ES";u.rate=.9;u.onend=()=>setSp(false);window.speechSynthesis.speak(u)};
   const dlSRT=()=>{let s="";scenes.forEach((sc,i)=>{const st=i*5;const en=st+5;const f=sec=>`${String(Math.floor(sec/3600)).padStart(2,"0")}:${String(Math.floor(sec%3600/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")},000`;s+=`${i+1}\n${f(st)} --> ${f(en)}\n${sc.narration_text||""}\n\n`});const b=new Blob([s],{type:"text/srt"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="subtitulos.srt";a.click()};
   
   const shareUrl = videoUrl || window.location.href;
   const shareText = "Mira este video generado con IA en ALMAV Studio";
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}&bgcolor=08080e&color=06b6d4`;
   
   const shareFB = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=600,height=400');
   const shareX = () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank', 'width=600,height=400');
@@ -953,23 +1050,63 @@ function Screen4({scenes,videoUrl,onBack}){
           </button>
         </div>
       </div>
-      <div style={{flex:1,padding:28}}>
+      <div style={{flex:1,padding:28,overflowY:"auto"}}>
         <h2 style={{fontSize:20,fontWeight:800,marginBottom:4}}>Video Final</h2>
         <p style={{fontSize:12,color:"var(--text-dim)",marginBottom:16}}>{scenes.length} escenas · {scenes.length*5}s</p>
         <div className="video-frame" style={{maxWidth:780}}>
           {videoUrl?<video src={videoUrl} controls style={{width:"100%",display:"block"}}/>:
           <div style={{aspectRatio:"16/9",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--text-faint)",fontSize:12}}>Genera el video en la pantalla anterior</div>}
         </div>
-        <div style={{marginTop:20}}>
-          <div style={{fontSize:11,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>Narración</div>
-          <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(scenes.length,4)},1fr)`,gap:8}}>
-            {scenes.map(s=>(
-              <div key={s.id} style={{padding:12,borderRadius:10,background:"var(--bg-card)",border:"1px solid var(--border)",fontSize:11,color:"var(--text-dim)",lineHeight:1.6}}>
-                <span style={{color:"var(--blue)",fontWeight:700,fontSize:10,display:"block",marginBottom:4}}>Scene {s.scene_number}</span>{s.narration_text||"—"}
-              </div>
-            ))}
+
+        {/* QR Code + Narration row */}
+        <div style={{display:"flex",gap:20,marginTop:20}}>
+          {/* QR Code */}
+          {videoUrl && (
+            <div style={{flexShrink:0,padding:16,borderRadius:12,background:"var(--bg-card)",border:"1px solid var(--border)",textAlign:"center"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:8}}>QR Code</div>
+              <img src={qrUrl} alt="QR" style={{width:120,height:120,borderRadius:8,display:"block",margin:"0 auto"}}/>
+              <div style={{fontSize:9,color:"var(--text-faint)",marginTop:8,maxWidth:120}}>Escanea para ver el video en tu celular</div>
+            </div>
+          )}
+
+          {/* Narration */}
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>Narración</div>
+            <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(scenes.length,4)},1fr)`,gap:8}}>
+              {scenes.map(s=>(
+                <div key={s.id} style={{padding:12,borderRadius:10,background:"var(--bg-card)",border:"1px solid var(--border)",fontSize:11,color:"var(--text-dim)",lineHeight:1.6}}>
+                  <span style={{color:"var(--blue)",fontWeight:700,fontSize:10,display:"block",marginBottom:4}}>Scene {s.scene_number}</span>{s.narration_text||"—"}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* History */}
+        {history && history.length > 0 && (
+          <div style={{marginTop:24}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--text-faint)",letterSpacing:.8,textTransform:"uppercase"}}>Historial de videos</div>
+              <button onClick={()=>setShowHistory(!showHistory)} style={{fontSize:10,color:"var(--blue)",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>
+                {showHistory?"Ocultar":"Mostrar"} ({history.length})
+              </button>
+            </div>
+            {showHistory && (
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:10}}>
+                {history.map((h,i)=>(
+                  <div key={i} onClick={()=>h.url&&window.open(h.url,"_blank")} style={{padding:12,borderRadius:10,background:"var(--bg-card)",border:"1px solid var(--border)",cursor:"pointer",transition:"all .2s"}}
+                    onMouseOver={e=>e.currentTarget.style.borderColor="rgba(6,182,212,0.3)"} onMouseOut={e=>e.currentTarget.style.borderColor="rgba(255,255,255,0.05)"}> 
+                    <div style={{fontSize:11,fontWeight:600,color:"var(--text)",marginBottom:4}}>{h.prompt?.substring(0,50)}...</div>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <span style={{fontSize:9,color:"var(--text-faint)"}}>{h.date}</span>
+                      <span style={{fontSize:9,color:"var(--blue)",fontWeight:600}}>{h.scenes} escenas</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -980,7 +1117,16 @@ function App(){
   const[screen,setScreen]=useState(1);const[scenes,setScenes]=useState([]);const[videoUrl,setVideoUrl]=useState(null);
   const[showCfg,setShowCfg]=useState(false);const[loading,setLoading]=useState(false);
   const[config,setConfig]=useState(DEFAULT_CONFIG);const cfgRef=useRef(config);const[statusMsg,setStatusMsg]=useState("");
+  const[history,setHistory]=useState([]);
   useEffect(()=>{cfgRef.current=config},[config]);
+  
+  // Save to history when video is ready
+  useEffect(()=>{
+    if(videoUrl&&scenes.length>0){
+      const entry={url:videoUrl,prompt:scenes[0]?.narration_text||"Video",scenes:scenes.length,date:new Date().toLocaleDateString()};
+      setHistory(prev=>{const exists=prev.find(h=>h.url===videoUrl);if(exists)return prev;return[entry,...prev].slice(0,20)});
+    }
+  },[videoUrl]);
 
   const fetchScenes=async()=>{const c=cfgRef.current;try{const d=await supaFetch(c,"scenes?order=scene_number.asc");if(d)setScenes(d);const v=d?.find(s=>s.video_url);if(v)setVideoUrl(v.video_url)}catch(e){}};
 
@@ -1009,8 +1155,8 @@ function App(){
       {showCfg&&<ConfigModal config={config} setConfig={setConfig} onSave={onCfgSave}/>}
       <nav className="nav-bar">
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:30,height:30,borderRadius:9,background:"linear-gradient(135deg,rgba(99,102,241,0.2),rgba(99,102,241,0.08))",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--blue)",boxShadow:"0 2px 8px rgba(99,102,241,0.12)"}}><I.film/></div>
-          <span style={{fontSize:16,fontWeight:800,letterSpacing:-.4,background:"linear-gradient(135deg,#fff,#a5b4fc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>ALMAV</span>
+          <div style={{width:30,height:30,borderRadius:9,background:"linear-gradient(135deg,rgba(6,182,212,0.2),rgba(6,182,212,0.08))",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--blue)",boxShadow:"0 2px 8px rgba(6,182,212,0.12)"}}><I.film/></div>
+          <span style={{fontSize:16,fontWeight:800,letterSpacing:-.4,background:"linear-gradient(135deg,#fff,#67e8f9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>ALMAV</span>
           <span style={{fontSize:11,color:"var(--text-faint)",fontWeight:400}}>Studio</span>
         </div>
         <div style={{flex:1,display:"flex",justifyContent:"center"}}><Stepper current={screen}/></div>
@@ -1019,7 +1165,7 @@ function App(){
       {screen===1&&<Screen1 onGenerate={handleGenerate} loading={loading} statusMsg={statusMsg}/>}
       {screen===2&&<Screen2 scenes={scenes} config={config} onNext={()=>setScreen(3)} onBack={()=>setScreen(1)} refreshScenes={fetchScenes} setScenes={setScenes}/>}
       {screen===3&&<Screen3 scenes={scenes} config={config} onNext={()=>setScreen(4)} onBack={()=>setScreen(2)} onVideoReady={u=>setVideoUrl(u)}/>}
-      {screen===4&&<Screen4 scenes={scenes} videoUrl={videoUrl} onBack={()=>setScreen(3)}/>}
+      {screen===4&&<Screen4 scenes={scenes} videoUrl={videoUrl} onBack={()=>setScreen(3)} history={history}/>}
     </div>
   );
 }
@@ -1028,4 +1174,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
-
