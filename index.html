@@ -708,21 +708,24 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
     const oldImage = scene.image_url;
     
     try {
-      // 1. Si hay imagen de referencia, subirla a Storage o usar URL de escena
+      // 1. Determinar imagen de referencia (la 1ra del array)
       let referenceUrl = null;
-      if(regenRef) {
-        // Archivo subido del dispositivo
-        setRegenStatus("Subiendo referencia...");
-        try {
-          referenceUrl = await uploadRefToStorage(regenRef);
-        } catch(e) {
-          setRegenStatus("Error subiendo referencia: " + e.message);
-          setRegenLoading(false);
-          return;
+      if(regenRefs.length > 0) {
+        const firstRef = regenRefs[0];
+        if(firstRef.isUpload && firstRef.file) {
+          // Subir archivo al Storage
+          setRegenStatus("Subiendo referencia...");
+          try {
+            referenceUrl = await uploadRefToStorage(firstRef.file);
+          } catch(e) {
+            setRegenStatus("Error subiendo referencia: " + e.message);
+            setRegenLoading(false);
+            return;
+          }
+        } else if(firstRef.url && firstRef.url.startsWith("http")) {
+          // URL de escena existente
+          referenceUrl = firstRef.url;
         }
-      } else if(regenRefs.length > 0) {
-        // Primera escena referenciada va como image-to-image
-        referenceUrl = regenRefs[0].url;
       }
 
       // 2. Actualizar prompt_image, reference_url y status
@@ -858,20 +861,21 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
             <div style={{marginBottom:8}}>
               {regenRefs.length > 0 && (
                 <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:8}}>
-                  <div style={{fontSize:9,fontWeight:700,color:"var(--text-faint)",letterSpacing:.5,textTransform:"uppercase"}}>Referencias ({regenRefs.length}) — La 1ra se usa como image-to-image</div>
+                  <div style={{fontSize:9,fontWeight:700,color:"var(--text-faint)",letterSpacing:.5,textTransform:"uppercase"}}>Referencias ({regenRefs.length}) — La 1ra se usa como guía visual</div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                     {regenRefs.map((ref,i)=>(
                       <div key={ref.num} style={{display:"flex",alignItems:"center",gap:6,padding:5,background:"var(--bg)",borderRadius:6,border:`1px solid ${i===0?"var(--blue)":"var(--border)"}`,position:"relative"}}>
                         <img src={ref.url} style={{width:44,height:33,objectFit:"cover",borderRadius:3}}/>
                         <div>
-                          <div style={{fontSize:9,fontWeight:700,color:i===0?"var(--blue)":"var(--text-dim)"}}>@E{ref.num}</div>
+                          <div style={{fontSize:9,fontWeight:700,color:i===0?"var(--blue)":"var(--text-dim)"}}>{ref.isUpload?`📷 ${(ref.fileName||"img").substring(0,8)}`:`@E${ref.num}`}</div>
                           <div style={{fontSize:7,color:"var(--text-faint)"}}>{i===0?"img2img":"texto"}</div>
                         </div>
                         <button onClick={()=>{
                           setRegenRefs(prev=>prev.filter(r=>r.num!==ref.num));
-                          setRegenPrompt(prev=>prev.replace(`@E${ref.num}`,"").replace(/\s+/g," ").trim());
-                          if(regenRefs.length<=1){setRegenRefPreview(null)}
-                          else{const remaining=regenRefs.filter(r=>r.num!==ref.num);if(remaining.length)setRegenRefPreview(remaining[0].url)}
+                          if(!ref.isUpload) setRegenPrompt(prev=>prev.replace(`@E${ref.num}`,"").replace(/\s+/g," ").trim());
+                          const remaining=regenRefs.filter(r=>r.num!==ref.num);
+                          if(remaining.length)setRegenRefPreview(remaining[0].url);
+                          else setRegenRefPreview(null);
                         }} style={{padding:"1px 4px",borderRadius:3,border:"none",background:"rgba(239,68,68,.1)",color:"#ef4444",fontSize:8,cursor:"pointer",lineHeight:1}}>✕</button>
                         {i===0 && <div style={{position:"absolute",top:-4,left:-4,padding:"0px 3px",borderRadius:2,background:"var(--blue)",fontSize:6,color:"#fff",fontWeight:800}}>1st</div>}
                       </div>
@@ -880,34 +884,29 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
                 </div>
               )}
               
-              {/* Upload from device */}
-              {regenRef && !regenRefs.length ? (
-                <div style={{display:"flex",alignItems:"center",gap:8,padding:8,background:"var(--bg)",borderRadius:8,border:"1px solid rgba(6,182,212,0.2)"}}>
-                  <div style={{position:"relative",flexShrink:0}}>
-                    <img src={regenRefPreview} style={{width:56,height:42,objectFit:"cover",borderRadius:4}}/>
-                    <div style={{position:"absolute",top:-3,left:-3,padding:"1px 4px",borderRadius:3,background:"var(--blue)",fontSize:7,color:"#fff",fontWeight:700}}>REF</div>
-                  </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:10,fontWeight:600,color:"var(--text)"}}>Imagen subida</div>
-                    <div style={{fontSize:9,color:"var(--text-faint)",marginTop:1}}>Se usará como image-to-image</div>
-                  </div>
-                  <button onClick={()=>{setRegenRef(null);setRegenRefPreview(null)}} style={{padding:"3px 6px",borderRadius:4,border:"1px solid rgba(239,68,68,.3)",background:"rgba(239,68,68,.06)",color:"#ef4444",fontSize:9,cursor:"pointer",flexShrink:0}}>✕</button>
-                </div>
-              ) : !regenRefs.length && (
-                <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:10,borderRadius:8,border:"1px dashed rgba(6,182,212,0.2)",background:"transparent",color:"var(--text-faint)",fontSize:10,cursor:"pointer",transition:"all .2s"}}
-                  onMouseOver={e=>{e.currentTarget.style.borderColor="rgba(6,182,212,0.4)";e.currentTarget.style.background="rgba(6,182,212,0.03)"}}
-                  onMouseOut={e=>{e.currentTarget.style.borderColor="rgba(6,182,212,0.2)";e.currentTarget.style.background="transparent"}}>
-                  📷 Subir imagen de referencia
-                  <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
-                    const file=e.target.files[0];
-                    if(!file)return;
-                    setRegenRef(file);
+              {/* Upload from device - multiple */}
+              <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:10,borderRadius:8,border:"1px dashed rgba(6,182,212,0.2)",background:"transparent",color:"var(--text-faint)",fontSize:10,cursor:"pointer",transition:"all .2s"}}
+                onMouseOver={e=>{e.currentTarget.style.borderColor="rgba(6,182,212,0.4)";e.currentTarget.style.background="rgba(6,182,212,0.03)"}}
+                onMouseOut={e=>{e.currentTarget.style.borderColor="rgba(6,182,212,0.2)";e.currentTarget.style.background="transparent"}}>
+                📷 Subir imágenes de referencia
+                <input type="file" accept="image/*" multiple style={{display:"none"}} onChange={e=>{
+                  const files=Array.from(e.target.files);
+                  if(!files.length)return;
+                  files.forEach((file,i)=>{
                     const reader=new FileReader();
-                    reader.onload=ev=>setRegenRefPreview(ev.target.result);
+                    reader.onload=ev=>{
+                      const refNum=`U${Date.now()}${i}`;
+                      setRegenRefs(prev=>[...prev,{num:refNum,url:ev.target.result,id:refNum,file:file,isUpload:true,fileName:file.name}]);
+                    };
                     reader.readAsDataURL(file);
-                  }}/>
-                </label>
-              )}
+                  });
+                  if(!regenRefPreview){
+                    const r=new FileReader();
+                    r.onload=ev=>setRegenRefPreview(ev.target.result);
+                    r.readAsDataURL(files[0]);
+                  }
+                }}/>
+              </label>
             </div>
 
             {/* Prompt textarea with drop zone */}
