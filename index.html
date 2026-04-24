@@ -472,6 +472,7 @@ function Screen1({onGenerate,loading,statusMsg}){
   const[refImg,setRefImg]=useState(null);
   const[refPreview,setRefPreview]=useState(null);
   const[enhancing,setEnhancing]=useState(false);
+  const[refStrength,setRefStrength]=useState(0.65);
   const toggle=(cur,val,set)=>set(cur===val?null:val);
 
   const enhancePrompt = () => {
@@ -539,13 +540,28 @@ function Screen1({onGenerate,loading,statusMsg}){
         {/* Image reference upload */}
         <div style={{marginBottom:16}}>
           {refPreview ? (
-            <div style={{display:"flex",alignItems:"center",gap:12,padding:12,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)"}}>
-              <img src={refPreview} style={{width:64,height:48,objectFit:"cover",borderRadius:6}}/>
-              <div style={{flex:1}}>
-                <div style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>Imagen de referencia</div>
-                <div style={{fontSize:10,color:"var(--text-faint)",marginTop:2}}>{refImg?.name}</div>
+            <div style={{padding:12,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:refImg?10:0}}>
+                <img src={refPreview} style={{width:64,height:48,objectFit:"cover",borderRadius:6}}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>Imagen de referencia</div>
+                  <div style={{fontSize:10,color:"var(--text-faint)",marginTop:2}}>{refImg?.name}</div>
+                </div>
+                <button onClick={removeImage} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(239,68,68,.3)",background:"rgba(239,68,68,.08)",color:"#ef4444",fontSize:10,fontWeight:600,cursor:"pointer"}}>✕ Quitar</button>
               </div>
-              <button onClick={removeImage} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(239,68,68,.3)",background:"rgba(239,68,68,.08)",color:"#ef4444",fontSize:10,fontWeight:600,cursor:"pointer"}}>✕ Quitar</button>
+              {/* Strength slider */}
+              <div style={{padding:"8px 0 0"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                  <span style={{fontSize:9,fontWeight:700,color:"var(--text-faint)",letterSpacing:.5}}>FIDELIDAD</span>
+                  <span style={{fontSize:10,fontWeight:700,color:"var(--blue)"}}>{Math.round(refStrength*100)}%</span>
+                </div>
+                <input type="range" min="0.1" max="0.95" step="0.05" value={refStrength} onChange={e=>setRefStrength(parseFloat(e.target.value))}
+                  style={{width:"100%",height:4,appearance:"none",WebkitAppearance:"none",background:`linear-gradient(to right, var(--blue) ${(refStrength-0.1)/0.85*100}%, var(--border) ${(refStrength-0.1)/0.85*100}%)`,borderRadius:4,outline:"none",cursor:"pointer"}}/>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
+                  <span style={{fontSize:8,color:"var(--text-faint)"}}>Casi idéntica</span>
+                  <span style={{fontSize:8,color:"var(--text-faint)"}}>Solo inspiración</span>
+                </div>
+              </div>
             </div>
           ) : (
             <label className="upload-area">
@@ -581,13 +597,13 @@ function Screen1({onGenerate,loading,statusMsg}){
 
         {/* Dual buttons */}
         <div style={{display:"flex",gap:10}}>
-          <button onClick={()=>{const p=buildPrompt("scene");onGenerate(p.chatInput,p.numScenes,aspect,style,"","scene","zoomIn","fade")}}
+          <button onClick={()=>{const p=buildPrompt("scene");onGenerate(p.chatInput,p.numScenes,aspect,style,"","scene","zoomIn","fade",refImg,refStrength)}}
             disabled={loading||!script.trim()}
             className="btn-outline"
             style={{flex:1,padding:"14px",borderRadius:12,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {loading?<Spin s={14}/>:<I.img/>} Generar Escena
           </button>
-          <button onClick={()=>{const p=buildPrompt("video");onGenerate(p.chatInput,p.numScenes,aspect,style,"","video","zoomIn","fade")}}
+          <button onClick={()=>{const p=buildPrompt("video");onGenerate(p.chatInput,p.numScenes,aspect,style,"","video","zoomIn","fade",refImg,refStrength)}}
             disabled={loading||!script.trim()}
             className="btn-primary"
             style={{flex:1,padding:"14px",borderRadius:12,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -653,11 +669,25 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
   const[regenRef,setRegenRef]=useState(null);
   const[regenRefPreview,setRegenRefPreview]=useState(null);
   const[regenRefs,setRegenRefs]=useState([]);
+  const[strength,setStrength]=useState(0.65);
+  const[imageHistory,setImageHistory]=useState([]);
+  const[showHistory,setShowHistory]=useState(false);
   const[originalPrompts]=useState(()=>{
     const map={};
     scenes.forEach(s=>{map[s.id]=s.prompt_image});
     return map;
   });
+
+  // Fetch image history
+  useEffect(()=>{
+    const fetchHistory=async()=>{
+      try{
+        const data=await supaFetch(config,"image_history?order=created_at.desc&limit=30");
+        if(data)setImageHistory(data);
+      }catch(e){}
+    };
+    fetchHistory();
+  },[config]);
   const toggleSel=id=>{const s=new Set(sel);s.has(id)?s.delete(id):s.add(id);setSel(s)};
   const selectEditScene=(id)=>{setEditScene(editScene===id?null:id);setRegenPrompt("");setRegenRef(null);setRegenRefPreview(null);setRegenRefs([])};
 
@@ -704,7 +734,7 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
         }
       });
     }
-    const newPrompt = `${basePrompt}. CRITICAL MODIFICATION: ${cleanCorrection}. Keep everything else exactly the same.`;
+    const newPrompt = `${basePrompt}. CRITICAL MODIFICATION: ${cleanCorrection}${extraRefs}. Keep everything else exactly the same.`;
     const oldImage = scene.image_url;
     
     try {
@@ -713,7 +743,6 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
       if(regenRefs.length > 0) {
         const firstRef = regenRefs[0];
         if(firstRef.isUpload && firstRef.file) {
-          // Subir archivo al Storage
           setRegenStatus("Subiendo referencia...");
           try {
             referenceUrl = await uploadRefToStorage(firstRef.file);
@@ -723,18 +752,29 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
             return;
           }
         } else if(firstRef.url && firstRef.url.startsWith("http")) {
-          // URL de escena existente
+          // URL de escena existente o historial
           referenceUrl = firstRef.url;
         }
       }
 
-      // 2. Actualizar prompt_image, reference_url y status
+      // 2. Construir prompt con referencias adicionales
+      const refDescriptions = regenRefs.slice(1).map((ref,i) => {
+        if(ref.isHistory) return `incorporate visual elements from the referenced historical image`;
+        if(ref.isUpload) return `incorporate visual elements from the uploaded reference image`;
+        return `also incorporate elements from scene ${ref.num}`;
+      }).join(". ");
+      const extraRefs = refDescriptions ? `. ${refDescriptions}` : "";
+
+      // 3. Actualizar prompt_image, reference_url, strength y status
       const updateData = { 
         prompt_image: newPrompt, 
         status: "pending",
         image_url: null
       };
-      if(referenceUrl) updateData.reference_url = referenceUrl;
+      if(referenceUrl) {
+        updateData.reference_url = referenceUrl;
+        updateData.strength = strength;
+      }
       
       await supaFetch(config, `scenes?id=eq.${sceneId}`, {
         method: "PATCH",
@@ -844,6 +884,51 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
           </div>
         )}
 
+        {/* ── Galería de historial ── */}
+        {editScene && imageHistory.length > 0 && (
+          <div style={{marginTop:12,padding:10,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--text-faint)",letterSpacing:.5,textTransform:"uppercase"}}>🕐 Imágenes anteriores</div>
+              <button onClick={()=>setShowHistory(!showHistory)} style={{fontSize:9,color:"var(--blue)",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>
+                {showHistory?"Ocultar":"Mostrar"} ({imageHistory.length})
+              </button>
+            </div>
+            {showHistory && (
+              <div style={{maxHeight:180,overflowY:"auto",paddingRight:4}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:4}}>
+                  {imageHistory.map(h=>{
+                    const isRef = regenRefs.find(r=>r.url===h.image_url);
+                    return(
+                    <div key={h.id}
+                      draggable="true"
+                      onDragStart={e=>{
+                        e.dataTransfer.setData("sceneRef",JSON.stringify({id:h.id,num:`H`,url:h.image_url}));
+                        e.currentTarget.style.opacity="0.5";
+                      }}
+                      onDragEnd={e=>{e.currentTarget.style.opacity="1"}}
+                      onClick={()=>{
+                        if(!isRef){
+                          setRegenRefs(prev=>[...prev,{num:`H${prev.length+1}`,url:h.image_url,id:h.id,isHistory:true}]);
+                          setRegenRefPreview(h.image_url);
+                        }
+                      }}
+                      style={{aspectRatio:"16/9",borderRadius:6,overflow:"hidden",border:isRef?"2px solid var(--blue)":"1px solid var(--border)",cursor:isRef?"default":"pointer",position:"relative",transition:"all .2s",opacity:isRef?0.5:1}}
+                      onMouseOver={e=>{if(!isRef)e.currentTarget.style.borderColor="var(--blue)"}}
+                      onMouseOut={e=>{if(!isRef)e.currentTarget.style.borderColor="rgba(255,255,255,0.05)"}}>
+                      <img src={h.image_url} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                      {isRef&&<div style={{position:"absolute",top:2,right:2,padding:"1px 4px",borderRadius:3,background:"var(--green)",fontSize:7,color:"#fff",fontWeight:700}}>✓</div>}
+                      <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"6px 4px 2px",background:"linear-gradient(transparent,rgba(0,0,0,0.85))",textAlign:"center"}}>
+                        <span style={{fontSize:7,color:"var(--text-faint)"}}>{new Date(h.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Regenerate panel */}
         {editScene && (
           <div style={{marginTop:12,padding:12,background:"var(--bg-input)",borderRadius:10,border:"1px solid var(--border)"}}>
@@ -867,7 +952,7 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
                       <div key={ref.num} style={{display:"flex",alignItems:"center",gap:6,padding:5,background:"var(--bg)",borderRadius:6,border:`1px solid ${i===0?"var(--blue)":"var(--border)"}`,position:"relative"}}>
                         <img src={ref.url} style={{width:44,height:33,objectFit:"cover",borderRadius:3}}/>
                         <div>
-                          <div style={{fontSize:9,fontWeight:700,color:i===0?"var(--blue)":"var(--text-dim)"}}>{ref.isUpload?`📷 ${(ref.fileName||"img").substring(0,8)}`:`@E${ref.num}`}</div>
+                          <div style={{fontSize:9,fontWeight:700,color:i===0?"var(--blue)":"var(--text-dim)"}}>{ref.isUpload?`📷 ${(ref.fileName||"img").substring(0,8)}`:ref.isHistory?`🕐 Hist`:`@E${ref.num}`}</div>
                           <div style={{fontSize:7,color:"var(--text-faint)"}}>{i===0?"img2img":"texto"}</div>
                         </div>
                         <button onClick={()=>{
@@ -909,10 +994,37 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
               </label>
             </div>
 
-            {/* Prompt textarea with drop zone */}
+            {/* Prompt textarea with commands */}
             <div style={{position:"relative"}}>
+              {/* Command popup */}
+              {regenPrompt.endsWith("/") && (
+                <div style={{position:"absolute",bottom:"100%",left:0,right:0,marginBottom:4,background:"var(--bg-card)",border:"1px solid rgba(6,182,212,0.2)",borderRadius:8,padding:6,zIndex:10,boxShadow:"0 8px 24px rgba(0,0,0,0.5)",maxHeight:200,overflowY:"auto"}}>
+                  <div style={{fontSize:9,fontWeight:700,color:"var(--text-faint)",marginBottom:6,letterSpacing:.5}}>COMANDOS — click para insertar</div>
+                  {[
+                    {cmd:"/colores",desc:"Usa los colores de la ref",insert:"usa los mismos colores y paleta de la imagen de referencia"},
+                    {cmd:"/estilo",desc:"Imita el estilo visual",insert:"imita el estilo visual, texturas y acabado de la imagen de referencia"},
+                    {cmd:"/composicion",desc:"Copia la composición",insert:"replica la composición, encuadre y perspectiva de la imagen de referencia"},
+                    {cmd:"/iluminacion",desc:"Misma iluminación",insert:"aplica la misma iluminación, sombras y ambiente lumínico de la imagen de referencia"},
+                    {cmd:"/todo",desc:"Copia todo el estilo",insert:"replica los colores, estilo, composición e iluminación de la imagen de referencia exactamente"},
+                    {cmd:"/noche",desc:"Cambiar a noche",insert:"change the scene to night time with dark sky, stars and moonlight"},
+                    {cmd:"/lluvia",desc:"Agregar lluvia",insert:"add heavy rain falling with wet surfaces and reflective puddles"},
+                    {cmd:"/cinematic",desc:"Estilo cine",insert:"make it cinematic with dramatic lighting, lens flare, film grain, shallow depth of field"},
+                    {cmd:"/anime",desc:"Estilo anime",insert:"convert to anime art style with cel shading and vibrant colors"},
+                    {cmd:"/retro",desc:"Estilo retro 80s",insert:"apply retro 80s aesthetic with neon colors, synthwave vibes and VHS grain"},
+                  ].map(c=>(
+                    <div key={c.cmd} onClick={()=>setRegenPrompt(prev=>prev.slice(0,-1)+c.insert+" ")}
+                      style={{padding:"5px 8px",borderRadius:5,cursor:"pointer",display:"flex",alignItems:"center",gap:8,transition:"all .15s"}}
+                      onMouseOver={e=>e.currentTarget.style.background="rgba(6,182,212,0.08)"}
+                      onMouseOut={e=>e.currentTarget.style.background="transparent"}>
+                      <span style={{fontSize:11,fontWeight:700,color:"var(--blue)",minWidth:85}}>{c.cmd}</span>
+                      <span style={{fontSize:10,color:"var(--text-faint)"}}>{c.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <textarea value={regenPrompt} onChange={e=>setRegenPrompt(e.target.value)}
-                placeholder={regenRefs.length>0||regenRef ? "Describe qué tomar de las referencias... ej: '@E1 colores + @E3 composición'" : "Describe qué cambiar... ej: 'Que sea de noche' o arrastra escenas aquí"}
+                placeholder={regenRefs.length>0 ? "Escribe / para comandos · ej: /colores /noche" : "Describe qué cambiar o escribe / para ver comandos"}
                 onDragOver={e=>{e.preventDefault();e.currentTarget.style.borderColor="var(--blue)";e.currentTarget.style.background="rgba(6,182,212,0.04)"}}
                 onDragLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.06)";e.currentTarget.style.background="var(--bg)"}}
                 onDrop={e=>{
@@ -930,17 +1042,35 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
                     }
                   }catch(err){}
                 }}
-                style={{width:"100%",height:70,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:10,color:"var(--text)",fontSize:11,resize:"none",outline:"none",lineHeight:1.5,transition:"all .2s"}}
+                style={{width:"100%",height:75,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 10px 22px",color:"var(--text)",fontSize:11,resize:"none",outline:"none",lineHeight:1.5,transition:"all .2s"}}
                 onFocus={e=>e.target.style.borderColor="var(--blue)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.06)"}/>
-              {/* Tags helper */}
-              {regenPrompt.includes("@E") && (
-                <div style={{position:"absolute",bottom:4,right:6,display:"flex",gap:3}}>
+              
+              {/* Bottom bar: tags + hint */}
+              <div style={{position:"absolute",bottom:4,left:8,right:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{display:"flex",gap:3}}>
                   {regenPrompt.match(/@E\d+/g)?.map((tag,i)=>(
                     <span key={i} style={{padding:"1px 5px",borderRadius:3,background:"rgba(6,182,212,0.15)",color:"var(--blue)",fontSize:8,fontWeight:700}}>{tag}</span>
                   ))}
                 </div>
-              )}
+                <span style={{fontSize:8,color:"var(--text-faint)",opacity:0.5}}>/ = comandos</span>
+              </div>
             </div>
+            
+            {/* Strength slider - only when refs exist */}
+            {(regenRefs.length>0||regenRef) && (
+              <div style={{marginTop:8,padding:"8px 10px",background:"var(--bg)",borderRadius:8,border:"1px solid var(--border)"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                  <span style={{fontSize:9,fontWeight:700,color:"var(--text-faint)",letterSpacing:.5}}>FIDELIDAD A REFERENCIA</span>
+                  <span style={{fontSize:10,fontWeight:700,color:"var(--blue)"}}>{Math.round(strength*100)}%</span>
+                </div>
+                <input type="range" min="0.1" max="0.95" step="0.05" value={strength} onChange={e=>setStrength(parseFloat(e.target.value))}
+                  style={{width:"100%",height:4,appearance:"none",WebkitAppearance:"none",background:`linear-gradient(to right, var(--blue) ${(strength-0.1)/0.85*100}%, var(--border) ${(strength-0.1)/0.85*100}%)`,borderRadius:4,outline:"none",cursor:"pointer"}}/>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+                  <span style={{fontSize:8,color:"var(--text-faint)"}}>Casi idéntica</span>
+                  <span style={{fontSize:8,color:"var(--text-faint)"}}>Solo inspiración</span>
+                </div>
+              </div>
+            )}
             
             <button onClick={()=>{regenerateImage(editScene);setRegenRef(null);setRegenRefPreview(null);setRegenRefs([])}} disabled={regenLoading||!regenPrompt.trim()}
               style={{width:"100%",marginTop:8,padding:"9px",borderRadius:8,border:"none",
@@ -1330,13 +1460,26 @@ function App(){
 
   const fetchScenes=async()=>{const c=cfgRef.current;try{const d=await supaFetch(c,"scenes?order=scene_number.asc");if(d)setScenes(d);const v=d?.find(s=>s.video_url);if(v)setVideoUrl(v.video_url)}catch(e){}};
 
-  const handleGenerate=async(chatInput,numScenes,aspect,style,voiceId,mode,animation,transition)=>{
+  const handleGenerate=async(chatInput,numScenes,aspect,style,voiceId,mode,animation,transition,refFile,refStr)=>{
     const c=cfgRef.current;if(!c.supabaseUrl||!c.n8nWebhook){alert("Falta configuración.");return}
     setLoading(true);setStatusMsg("Limpiando...");
     try{
+      // Upload reference if exists
+      let refUrl="";
+      if(refFile){
+        setStatusMsg("Subiendo referencia...");
+        try{
+          const ext=refFile.name.split('.').pop();
+          const fn=`ref_${Date.now()}.${ext}`;
+          const r=await fetch(`${c.supabaseUrl}/storage/v1/object/references/${fn}`,{
+            method:"POST",headers:{apikey:c.supabaseKey,Authorization:`Bearer ${c.supabaseKey}`,"Content-Type":refFile.type},body:refFile
+          });
+          if(r.ok)refUrl=`${c.supabaseUrl}/storage/v1/object/public/references/${fn}`;
+        }catch(e){}
+      }
       try{await supaFetch(c,"scenes?scene_number=gt.0",{method:"DELETE"})}catch(e){}
       await new Promise(r=>setTimeout(r,1000));setStatusMsg("Enviando a la IA...");
-      try{await fetch(c.n8nWebhook,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chatInput,voiceId:voiceId||"",mode:mode||"video",animation:animation||"zoomIn",transition:transition||"fade"})})}catch(e){}
+      try{await fetch(c.n8nWebhook,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chatInput,voiceId:voiceId||"",mode:mode||"video",animation:animation||"zoomIn",transition:transition||"fade",referenceUrl:refUrl,strength:refStr||0.65})})}catch(e){}
       await new Promise(r=>setTimeout(r,5000));setStatusMsg("Generando escenas...");
       let att=0,found=[];
       while(att<60){await new Promise(r=>setTimeout(r,3000));try{
