@@ -734,6 +734,13 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
         }
       });
     }
+    // Build extra refs description
+    const refDescriptions = regenRefs.slice(1).map((ref,i) => {
+      if(ref.isHistory) return `incorporate visual elements from the referenced historical image`;
+      if(ref.isUpload) return `incorporate visual elements from the uploaded reference image`;
+      return `also incorporate elements from scene ${ref.num}`;
+    }).join(". ");
+    const extraRefs = refDescriptions ? `. ${refDescriptions}` : "";
     const newPrompt = `${basePrompt}. CRITICAL MODIFICATION: ${cleanCorrection}${extraRefs}. Keep everything else exactly the same.`;
     const oldImage = scene.image_url;
     
@@ -752,20 +759,11 @@ function Screen2({scenes,config,onNext,onBack,refreshScenes,setScenes}){
             return;
           }
         } else if(firstRef.url && firstRef.url.startsWith("http")) {
-          // URL de escena existente o historial
           referenceUrl = firstRef.url;
         }
       }
 
-      // 2. Construir prompt con referencias adicionales
-      const refDescriptions = regenRefs.slice(1).map((ref,i) => {
-        if(ref.isHistory) return `incorporate visual elements from the referenced historical image`;
-        if(ref.isUpload) return `incorporate visual elements from the uploaded reference image`;
-        return `also incorporate elements from scene ${ref.num}`;
-      }).join(". ");
-      const extraRefs = refDescriptions ? `. ${refDescriptions}` : "";
-
-      // 3. Actualizar prompt_image, reference_url, strength y status
+      // 2. Actualizar prompt_image, reference_url, strength y status
       const updateData = { 
         prompt_image: newPrompt, 
         status: "pending",
